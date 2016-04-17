@@ -7,7 +7,95 @@ module JsonApi.Decode (..) where
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
-import Dict exposing (Dict)
+import Result exposing (Result)
+import Dict exposing (Dict, get, map)
+import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..))
+
+
+{-| Represents a resource whose relationships have been hydrated with pointers to other resources.
+-}
+type alias HydratedResource =
+  { id : String
+  , resourceType : String
+  , attributes : Attributes
+  , relationships : HydratedRelationships
+  , links : Links
+  }
+
+
+{-| A Dictionary with HydratedRelationship records as values.
+-}
+type alias HydratedRelationships =
+  Dict String HydratedRelationship
+
+
+{-| A relationships object whose data has been updated with full data from the 'included' resources,
+rather than just containing 'id' and 'type'.
+-}
+type alias HydratedRelationship =
+  { data : Maybe Data
+  , links : Links
+  , meta : Meta
+  }
+
+
+{-| Retrieve the primary resource from a JSONAPI payload. This function assumes a singular primary resource.
+-}
+primary : Json.Decode.Decoder (OneOrMany HydratedResource)
+primary =
+  Json.Decode.customDecoder document (\doc -> Ok (hydratePrimary doc))
+
+
+hydratePrimary : Document -> OneOrMany HydratedResource
+hydratePrimary doc =
+  OneOrMany.map (hydrateResource doc.included) doc.data
+
+
+hydrateResource : List Resource -> Resource -> HydratedResource
+hydrateResource includedData resource =
+  { resource
+    | relationships = hydrateRelationships includedData resource.relationships
+  }
+
+
+hydrateRelationships : List Resource -> Relationships -> HydratedRelationships
+hydrateRelationships includedData relationships =
+  Dict.map (hydrateSingleRelationship includedData) relationships
+
+
+hydrateSingleRelationship : List Resource -> String -> Relationship -> HydratedRelationship
+hydrateSingleRelationship includedData relationshipName relationship =
+  case relationship.data of
+    Singleton relationshipData ->
+      let
+        relatedId =
+          relationshipData.id
+
+        relatedType =
+          relationshipData.resourceType
+
+        maybeData =
+          List.head
+            <| List.filter
+                (\resource -> resource.id == relatedId && resource.resourceType == relatedType)
+                includedData
+      in
+        { relationship | data = Maybe.map Singleton maybeData }
+
+    Collection relationshipDataList ->
+      let
+        relatedIds =
+          List.map (\record -> record.id) relationshipDataList
+
+        relatedTypes =
+          List.map (\record -> record.resourceType) relationshipDataList
+
+        hydratedRelationshipDataList =
+          List.filter
+            (\resource -> (List.member resource.id relatedIds) && (List.member resource.resourceType relatedTypes))
+            includedData
+      in
+        { relationship | data = Just (Collection hydratedRelationshipDataList) }
 
 
 type alias Document =
@@ -19,7 +107,7 @@ type alias Document =
 
 
 type alias Data =
-  SingletonOrCollection Resource
+  OneOrMany Resource
 
 
 type alias Resource =
@@ -42,13 +130,8 @@ type alias Relationship =
   }
 
 
-type SingletonOrCollection a
-  = Singleton a
-  | Collection (List a)
-
-
 type alias RelationshipData =
-  SingletonOrCollection ResourceIdentifier
+  OneOrMany ResourceIdentifier
 
 
 type alias ResourceIdentifier =
@@ -107,8 +190,8 @@ meta =
 data : Decoder Data
 data =
   oneOf
-    [ map Collection (list resource)
-    , map Singleton resource
+    [ Json.Decode.map Collection (list resource)
+    , Json.Decode.map Singleton resource
     ]
 
 
@@ -159,8 +242,8 @@ relationship =
 relationshipData : Decoder RelationshipData
 relationshipData =
   oneOf
-    [ map Collection (list resourceIdentifier)
-    , map Singleton resourceIdentifier
+    [ Json.Decode.map Collection (list resourceIdentifier)
+    , Json.Decode.map Singleton resourceIdentifier
     ]
 
 

@@ -1,20 +1,107 @@
 module JsonApi.Test.Decode (suite) where
 
-import ElmTest
+import ElmTest as Test
 import Dict
 import Debug
 import Json.Encode
 import Json.Decode exposing (decodeString)
-import JsonApi.Decode exposing (emptyLinks, Document, SingletonOrCollection(..))
+import JsonApi.Decode exposing (emptyLinks, Document)
+import JsonApi.OneOrMany exposing (OneOrMany(..))
 import Graphics.Element exposing (Element)
 
 
-suite : ElmTest.Test
+suite : Test.Test
 suite =
-  ElmTest.suite "JsonApi Decoders" [ document ]
+  Test.suite
+    "JsonApi Decoders"
+    [ document
+    , primary
+    ]
 
 
-document : ElmTest.Test
+primary : Test.Test
+primary =
+  let
+    decodedPrimaryResource =
+      case decodeString JsonApi.Decode.primary examplePayload of
+        Err string ->
+          Debug.crash string
+
+        Ok data ->
+          case data of
+            Singleton resource ->
+              Debug.crash "Expected collection of resources"
+
+            Collection resourceList ->
+              case List.head resourceList of
+                Nothing ->
+                  Debug.crash "Expected non-empty collection"
+
+                Just primaryResource ->
+                  primaryResource
+
+    relatedCommentResource =
+      case Dict.get "comments" (decodedPrimaryResource.relationships) of
+        Nothing ->
+          Debug.crash "Expected comments relationship to be decoded"
+
+        Just commentsRelationship ->
+          case commentsRelationship.data of
+            Nothing ->
+              Debug.crash "Expected comment relationship data to be present"
+
+            Just (Singleton _) ->
+              Debug.crash "Expected comment relationship to be a collection"
+
+            Just (Collection commentResources) ->
+              case (List.head <| List.filter (\resource -> resource.id == "12") commentResources) of
+                Nothing ->
+                  Debug.crash "Expected to find related comment with id 12"
+
+                Just commentResource ->
+                  commentResource
+
+    relatedCommentAuthorResource =
+      case Dict.get "author" (relatedCommentResource.relationships) of
+        Nothing ->
+          Debug.crash "Expected 'author' relationship to be present on included comment resources"
+
+        Just authorRelationship ->
+          case authorRelationship.data of
+            Nothing ->
+              Debug.crash "Expected author relationship data to be present"
+
+            Just (Collection _) ->
+              Debug.crash "Expected author relationship to be a singleton"
+
+            Just (Singleton authorResource) ->
+              authorResource
+
+    primaryAttributesAreDecoded =
+      Test.assertEqual
+        (Dict.get "title" decodedPrimaryResource.attributes)
+        (Just (Json.Encode.string "JSON API paints my bikeshed!"))
+
+    relationshipAttributesAreDecoded =
+      Test.assertEqual
+        (Dict.get "body" relatedCommentResource.attributes)
+        (Just (Json.Encode.string "I like XML better"))
+
+    relationshipsAreHydratedRecursively =
+      Test.assertEqual
+        (Dict.get "twitter" relatedCommentAuthorResource.attributes)
+        (Just (Json.Encode.string "dgeb"))
+
+  in
+    Test.suite
+      "primary function"
+      [ Test.test "it extracts the primary data attributes from the document" primaryAttributesAreDecoded
+      , Test.test "it extracts the relationship attributes" relationshipAttributesAreDecoded
+      , Test.test "recursively hydrates relationships" relationshipsAreHydratedRecursively
+      ]
+
+
+document : Test.Test
 document =
   let
     decodedPayload =
@@ -25,12 +112,12 @@ document =
         Err string ->
           Debug.crash string
   in
-    ElmTest.test
+    Test.test
       "it decodes an entire JsonApi document"
       {- we must test the equality of the inspected data structures
       because Dictionary equality is unreliable
       -}
-      (ElmTest.assertEqual (toString expectedDocument) (toString decodedPayload))
+      (Test.assertEqual (toString expectedDocument) (toString decodedPayload))
 
 
 expectedDocument : Document
