@@ -18,7 +18,9 @@ main =
 
 tests : Test
 tests =
-  suite "JsonApi Decoders" [ documentDecode ]
+  suite
+    "JsonApi Decoders" 
+    [ documentDecode ]
 
 
 documentDecode : Test

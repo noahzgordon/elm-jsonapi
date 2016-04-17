@@ -1,12 +1,12 @@
 {
-    "version": "1.0.0",
-    "summary": "helpful summary of your project, less than 80 characters",
-    "repository": "https://github.com/user/project.git",
+    "version": "0.0.1",
+    "summary": "decoders and helper functions for working with JSONAPI payloads",
+    "repository": "https://github.com/noahzgordon/elm-jsonapi.git",
     "license": "BSD3",
     "source-directories": [
         "src"
     ],
-    "exposed-modules": [],
+    "exposed-modules": ["JsonApi"],
     "dependencies": {
         "NoRedInk/elm-decode-pipeline": "1.0.0 <= v < 2.0.0",
         "deadfoxygrandpa/elm-test": "3.1.1 <= v < 4.0.0",
