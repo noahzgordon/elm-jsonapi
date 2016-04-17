@@ -4,7 +4,8 @@
     "repository": "https://github.com/noahzgordon/elm-jsonapi.git",
     "license": "BSD3",
     "source-directories": [
-        "src"
+        "src",
+        "test"
     ],
     "exposed-modules": ["JsonApi"],
     "dependencies": {

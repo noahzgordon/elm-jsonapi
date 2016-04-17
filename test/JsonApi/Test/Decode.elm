@@ -1,45 +1,36 @@
-module Main (..) where
+module JsonApi.Test.Decode (suite) where
 
-import Task
-import ElmTest exposing (..)
+import ElmTest
 import Dict
 import Debug
 import Json.Encode
 import Json.Decode exposing (decodeString)
-import JsonApi exposing (..)
-import JsonApi.Decode exposing (..)
+import JsonApi.Decode exposing (emptyLinks, Document, SingletonOrCollection(..))
 import Graphics.Element exposing (Element)
 
 
-main : Element
-main =
-  elementRunner tests
+suite : ElmTest.Test
+suite =
+  ElmTest.suite "JsonApi Decoders" [ document ]
 
 
-tests : Test
-tests =
-  suite
-    "JsonApi Decoders" 
-    [ documentDecode ]
-
-
-documentDecode : Test
-documentDecode =
+document : ElmTest.Test
+document =
   let
     decodedPayload =
-      case decodeString document examplePayload of
+      case decodeString JsonApi.Decode.document examplePayload of
         Ok payload ->
           payload
 
         Err string ->
           Debug.crash string
   in
-    test
+    ElmTest.test
       "it decodes an entire JsonApi document"
       {- we must test the equality of the inspected data structures
       because Dictionary equality is unreliable
       -}
-      (assertEqual (toString expectedDocument) (toString decodedPayload))
+      (ElmTest.assertEqual (toString expectedDocument) (toString decodedPayload))
 
 
 expectedDocument : Document
