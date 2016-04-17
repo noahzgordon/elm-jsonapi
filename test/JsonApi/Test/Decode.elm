@@ -1,20 +1,52 @@
 module JsonApi.Test.Decode (suite) where
 
-import ElmTest
+import ElmTest as Test
 import Dict
 import Debug
 import Json.Encode
 import Json.Decode exposing (decodeString)
-import JsonApi.Decode exposing (emptyLinks, Document, SingletonOrCollection(..))
+import JsonApi.Decode exposing (emptyLinks, Document)
+import JsonApi.OneOrMany exposing (OneOrMany(..))
 import Graphics.Element exposing (Element)
 
 
-suite : ElmTest.Test
+suite : Test.Test
 suite =
-  ElmTest.suite "JsonApi Decoders" [ document ]
+  Test.suite "JsnApi Decoders" [ document ]
 
 
-document : ElmTest.Test
+primary : Test.Test
+primary =
+  let
+    decodedPrimaryResource =
+      case decodeString JsonApi.Decode.primary examplePayload of
+        Ok resource ->
+          case resource of
+            Singleton resource ->
+              Debug.crash "Expected collection of resources"
+
+            Collection resourceList ->
+              resourceList
+
+        Err string ->
+          Debug.crash string
+
+    primaryAttributes =
+      case List.head decodedPrimaryResource of
+        Nothing ->
+          Debug.crash "Expected non-empty collection"
+
+        Just primaryResource ->
+          primaryResource.attributes
+
+    assertion =
+      Test.assertEqual
+        (Dict.get "title" primaryAttributes)
+        (Just (Json.Encode.string "JSON API paints my bikeshed!"))
+  in
+    Test.test "it extracts the primary data attributes from the document" assertion
+
+document : Test.Test
 document =
   let
     decodedPayload =
@@ -25,12 +57,12 @@ document =
         Err string ->
           Debug.crash string
   in
-    ElmTest.test
+    Test.test
       "it decodes an entire JsonApi document"
       {- we must test the equality of the inspected data structures
       because Dictionary equality is unreliable
       -}
-      (ElmTest.assertEqual (toString expectedDocument) (toString decodedPayload))
+      (Test.assertEqual (toString expectedDocument) (toString decodedPayload))
 
 
 expectedDocument : Document

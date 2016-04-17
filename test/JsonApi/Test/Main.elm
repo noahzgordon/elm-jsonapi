@@ -5,7 +5,6 @@ import Dict
 import Debug
 import Json.Encode
 import Json.Decode exposing (decodeString)
-import JsonApi exposing (..)
 import JsonApi.Decode exposing (..)
 import Graphics.Element exposing (Element)
 
