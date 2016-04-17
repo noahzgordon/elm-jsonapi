@@ -1,6 +1,5 @@
 module Main (..) where
 
-import Console
 import Task
 import ElmTest exposing (..)
 import Dict
@@ -9,6 +8,12 @@ import Json.Encode
 import Json.Decode exposing (decodeString)
 import JsonApi exposing (..)
 import JsonApi.Decode exposing (..)
+import Graphics.Element exposing (Element)
+
+
+main : Element
+main =
+  elementRunner tests
 
 
 tests : Test
@@ -29,7 +34,10 @@ documentDecode =
   in
     test
       "it decodes an entire JsonApi document"
-      (assertEqual expectedDocument decodedPayload)
+      {- we must test the equality of the inspected data structures
+      because Dictionary equality is unreliable
+      -}
+      (assertEqual (toString expectedDocument) (toString decodedPayload))
 
 
 expectedDocument : Document
@@ -73,14 +81,7 @@ expectedDocument =
                     }
                   )
                 ]
-          , links =
-              { self = Just "http://example.com/articles/1"
-              , related = Nothing
-              , first = Nothing
-              , last = Just "http://example.com/articles?page[offset]=10"
-              , prev = Nothing
-              , next = Just "http://example.com/articles?page[offset]=2"
-              }
+          , links = { emptyLinks | self = Just "http://example.com/articles/1" }
           }
         ]
   , included =
@@ -93,14 +94,7 @@ expectedDocument =
               , ( "twitter", (Json.Encode.string "dgeb") )
               ]
         , relationships = Dict.empty
-        , links =
-            { self = Just "http://example.com/people/9"
-            , related = Nothing
-            , first = Nothing
-            , last = Nothing
-            , prev = Nothing
-            , next = Nothing
-            }
+        , links = { emptyLinks | self = Just "http://example.com/people/9" }
         }
       , { id = "5"
         , resourceType = "comments"
@@ -112,8 +106,7 @@ expectedDocument =
               , links = emptyLinks
               , meta = Nothing
               }
-        , links =
-            { emptyLinks | self = Just "http://example.com/comments/5" }
+        , links = { emptyLinks | self = Just "http://example.com/comments/5" }
         }
       , { id = "12"
         , resourceType = "comments"
@@ -126,7 +119,7 @@ expectedDocument =
               , meta = Nothing
               }
         , links =
-            { emptyLinks | self = Just "http://example.com/people/9" }
+            { emptyLinks | self = Just "http://example.com/comments/12" }
         }
       ]
   , links =
@@ -225,8 +218,3 @@ examplePayload =
     }]
   }
   """
-
-
-port runner : Signal (Task.Task x ())
-port runner =
-  Console.run (consoleRunner tests)
