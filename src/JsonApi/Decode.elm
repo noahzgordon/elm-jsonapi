@@ -33,7 +33,7 @@ type alias HydratedRelationships =
 rather than just containing 'id' and 'type'.
 -}
 type alias HydratedRelationship =
-  { data : Data
+  { data : Maybe Data
   , links : Links
   , meta : Meta
   }
@@ -43,46 +43,28 @@ type alias HydratedRelationship =
 -}
 primary : Json.Decode.Decoder (OneOrMany HydratedResource)
 primary =
-  Json.Decode.customDecoder document (\doc -> hydratePrimary doc)
+  Json.Decode.customDecoder document (\doc -> Ok (hydratePrimary doc))
 
 
-hydratePrimary : Document -> Result String (OneOrMany HydratedResource)
+hydratePrimary : Document -> OneOrMany HydratedResource
 hydratePrimary doc =
-  OneOrMany.mapToResult (hydrateResource doc.included) doc.data
+  OneOrMany.map (hydrateResource doc.included) doc.data
 
 
-hydrateResource : List Resource -> Resource -> Result String HydratedResource
+hydrateResource : List Resource -> Resource -> HydratedResource
 hydrateResource includedData resource =
-  case hydrateRelationships includedData resource.relationships of
-    Ok successfullyHydratedRelationships ->
-      Ok { resource | relationships = successfullyHydratedRelationships }
-
-    Err string ->
-      Err string
+  { resource |
+    relationships = hydrateRelationships includedData resource.relationships
+  }
 
 
-hydrateRelationships : List Resource -> Relationships -> Result String HydratedRelationships
+hydrateRelationships : List Resource -> Relationships -> HydratedRelationships
 hydrateRelationships includedData relationships =
-  Dict.foldl (hydrateSingleRelationship includedData) (Ok Dict.empty) relationships
+  Dict.map (hydrateSingleRelationship includedData) relationships
 
 
-hydrateSingleRelationship : List Resource -> String -> Relationship -> Result String HydratedRelationships -> Result String HydratedRelationships
-hydrateSingleRelationship includedData key relationship newRelationshipsResult =
-  case newRelationshipsResult of
-    Ok newRelationships ->
-      case buildHydratedRelationship includedData relationship of
-        Ok hydratedRelationship ->
-          Ok (Dict.insert key hydratedRelationship newRelationships)
-
-        Err string ->
-          Err string
-
-    Err string ->
-      Err string
-
-
-buildHydratedRelationship : List Resource -> Relationship -> Result String HydratedRelationship
-buildHydratedRelationship includedData relationship =
+hydrateSingleRelationship : List Resource -> String -> Relationship -> HydratedRelationship
+hydrateSingleRelationship includedData relationshipName relationship =
   case relationship.data of
     Singleton relationshipData ->
       let
@@ -92,18 +74,13 @@ buildHydratedRelationship includedData relationship =
         relatedType =
           relationshipData.resourceType
 
-        maybeHydratedRelationshipData =
+        maybeData =
           List.head
             <| List.filter
                 (\resource -> resource.id == relatedId && resource.resourceType == relatedType)
                 includedData
       in
-        case maybeHydratedRelationshipData of
-          Just hydratedRelationshipData ->
-            Ok { relationship | data = Singleton hydratedRelationshipData }
-
-          Nothing ->
-            Err ("Included resource with id " ++ relatedId ++ " and type " ++ relatedType ++ " could not be found")
+        { relationship | data = Maybe.map Singleton maybeData }
 
     Collection relationshipDataList ->
       let
@@ -118,7 +95,7 @@ buildHydratedRelationship includedData relationship =
             (\resource -> (List.member resource.id relatedIds) && (List.member resource.resourceType relatedTypes))
             includedData
       in
-        Ok { relationship | data = Collection hydratedRelationshipDataList }
+        { relationship | data = Just (Collection hydratedRelationshipDataList) }
 
 
 type alias Document =
