@@ -29,10 +29,10 @@ primary =
 
         Ok data ->
           case data of
-            Singleton resource ->
+            One resource ->
               Debug.crash "Expected collection of resources"
 
-            Collection resourceList ->
+            Many resourceList ->
               case List.head resourceList of
                 Nothing ->
                   Debug.crash "Expected non-empty collection"
@@ -50,10 +50,10 @@ primary =
             Nothing ->
               Debug.crash "Expected comment relationship data to be present"
 
-            Just (Singleton _) ->
+            Just (One _) ->
               Debug.crash "Expected comment relationship to be a collection"
 
-            Just (Collection commentResources) ->
+            Just (Many commentResources) ->
               case (List.Extra.find (\(HydratedResource resource) -> resource.id == "12") commentResources) of
                 Nothing ->
                   Debug.crash "Expected to find related comment with id 12"
@@ -71,10 +71,10 @@ primary =
             Nothing ->
               Debug.crash "Expected author relationship data to be present"
 
-            Just (Collection _) ->
+            Just (Many _) ->
               Debug.crash "Expected author relationship to be a singleton"
 
-            Just (Singleton (HydratedResource authorResource)) ->
+            Just (One (HydratedResource authorResource)) ->
               authorResource
 
     primaryAttributesAreDecoded =

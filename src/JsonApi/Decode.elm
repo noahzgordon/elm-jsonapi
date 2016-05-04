@@ -47,7 +47,7 @@ hydrateRelationships includedData relationships =
 hydrateSingleRelationship : List Resource -> String -> Relationship -> HydratedRelationship
 hydrateSingleRelationship includedData relationshipName relationship =
   case relationship.data of
-    Singleton relationshipData ->
+    One relationshipData ->
       let
         relatedId =
           relationshipData.id
@@ -61,11 +61,11 @@ hydrateSingleRelationship includedData relationshipName relationship =
                 (\resource -> resource.id == relatedId && resource.resourceType == relatedType)
                 includedData
 
-        recursivelyHydratedMaybeData = Maybe.map (hydrateData includedData) (Maybe.map Singleton maybeData)
+        recursivelyHydratedMaybeData = Maybe.map (hydrateData includedData) (Maybe.map One maybeData)
       in
         { relationship | data = recursivelyHydratedMaybeData }
 
-    Collection relationshipDataList ->
+    Many relationshipDataList ->
       let
         relatedIds =
           List.map (\record -> record.id) relationshipDataList
@@ -78,7 +78,7 @@ hydrateSingleRelationship includedData relationshipName relationship =
             (\resource -> (List.member resource.id relatedIds) && (List.member resource.resourceType relatedTypes))
             includedData
 
-        recursivelyHydratedDataList = hydrateData includedData (Collection hydratedRelationshipDataList)
+        recursivelyHydratedDataList = hydrateData includedData (Many hydratedRelationshipDataList)
       in
         { relationship | data = Just recursivelyHydratedDataList }
 
@@ -103,8 +103,8 @@ meta =
 data : Decoder Data
 data =
   oneOf
-    [ Json.Decode.map Collection (list resource)
-    , Json.Decode.map Singleton resource
+    [ Json.Decode.map Many (list resource)
+    , Json.Decode.map One resource
     ]
 
 
@@ -155,8 +155,8 @@ relationship =
 relationshipData : Decoder RelationshipData
 relationshipData =
   oneOf
-    [ Json.Decode.map Collection (list resourceIdentifier)
-    , Json.Decode.map Singleton resourceIdentifier
+    [ Json.Decode.map Many (list resourceIdentifier)
+    , Json.Decode.map One resourceIdentifier
     ]
 
 
