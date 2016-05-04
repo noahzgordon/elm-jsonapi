@@ -22,7 +22,7 @@ suite =
 primary : Test.Test
 primary =
   let
-    decodedPrimaryResource =
+    decodedPrimaryResourceObject =
       case decodeString JsonApi.Decode.primary examplePayload of
         Err string ->
           Debug.crash string
@@ -37,11 +37,11 @@ primary =
                 Nothing ->
                   Debug.crash "Expected non-empty collection"
 
-                Just (Resource primaryResource) ->
-                  primaryResource
+                Just (Resource ident object) ->
+                  object
 
-    relatedCommentResource =
-      case Dict.get "comments" (decodedPrimaryResource.relationships) of
+    relatedCommentResourceObject =
+      case Dict.get "comments" (decodedPrimaryResourceObject.relationships) of
         Nothing ->
           Debug.crash "Expected comments relationship to be decoded"
 
@@ -54,15 +54,15 @@ primary =
               Debug.crash "Expected comment relationship to be a collection"
 
             Just (Many commentResources) ->
-              case (List.Extra.find (\(Resource resource) -> resource.id == "12") commentResources) of
+              case (List.Extra.find (\(Resource ident _) -> ident.id == "12") commentResources) of
                 Nothing ->
                   Debug.crash "Expected to find related comment with id 12"
 
-                Just (Resource commentResource) ->
-                  commentResource
+                Just (Resource ident object) ->
+                  object
 
-    relatedCommentAuthorResource =
-      case Dict.get "author" (relatedCommentResource.relationships) of
+    relatedCommentAuthorResourceObject =
+      case Dict.get "author" (relatedCommentResourceObject.relationships) of
         Nothing ->
           Debug.crash "Expected 'author' relationship to be present on included comment resources"
 
@@ -74,22 +74,22 @@ primary =
             Just (Many _) ->
               Debug.crash "Expected author relationship to be a singleton"
 
-            Just (One (Resource authorResource)) ->
-              authorResource
+            Just (One (Resource ident object)) ->
+              object
 
     primaryAttributesAreDecoded =
       Test.assertEqual
-        (Dict.get "title" decodedPrimaryResource.attributes)
+        (Dict.get "title" decodedPrimaryResourceObject.attributes)
         (Just (Json.Encode.string "JSON API paints my bikeshed!"))
 
     relationshipAttributesAreDecoded =
       Test.assertEqual
-        (Dict.get "body" relatedCommentResource.attributes)
+        (Dict.get "body" relatedCommentResourceObject.attributes)
         (Just (Json.Encode.string "I like XML better"))
 
     relationshipsAreHydratedRecursively =
       Test.assertEqual
-        (Dict.get "twitter" relatedCommentAuthorResource.attributes)
+        (Dict.get "twitter" relatedCommentAuthorResourceObject.attributes)
         (Just (Json.Encode.string "dgeb"))
 
   in

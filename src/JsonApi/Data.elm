@@ -1,16 +1,24 @@
-module JsonApi.Data where
+module JsonApi.Data (..) where
 
 import Dict exposing (Dict)
 import Json.Decode
 import JsonApi.OneOrMany exposing (OneOrMany)
 
+
 type alias Data =
   OneOrMany Resource
 
-type Resource = Resource
-  { id : String
-  , resourceType : String
-  , attributes : Attributes
+
+type Resource
+  = Resource ResourceIdentifier ResourceObject
+
+
+type alias ResourceIdentifier =
+  { id : String, resourceType : String }
+
+
+type alias ResourceObject =
+  { attributes : Attributes
   , relationships : Relationships
   , links : Links
   }
@@ -27,7 +35,9 @@ type alias Relationship =
   }
 
 
+
 {- Raw data types; not exposed -}
+
 
 type alias Document =
   { data : RawData
@@ -41,10 +51,12 @@ type alias RawData =
   OneOrMany RawResource
 
 
-type alias RawResource =
-  { id : String
-  , resourceType : String
-  , attributes : Attributes
+type RawResource
+  = RawResource ResourceIdentifier RawResourceObject
+
+
+type alias RawResourceObject =
+  { attributes : Attributes
   , relationships : RawRelationships
   , links : Links
   }
@@ -63,10 +75,6 @@ type alias RawRelationship =
 
 type alias RawRelationshipData =
   OneOrMany ResourceIdentifier
-
-
-type alias ResourceIdentifier =
-  { id : String, resourceType : String }
 
 
 type alias Links =
@@ -100,4 +108,3 @@ type alias Meta =
 
 type alias Link =
   Maybe String
-

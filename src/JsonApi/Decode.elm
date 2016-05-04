@@ -9,6 +9,7 @@ import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 import Result exposing (Result)
 import Dict
+import List.Extra
 
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..))
 import JsonApi.Data exposing (..)
@@ -32,10 +33,10 @@ hydrateData includedData data =
 
 
 hydrateResource : List RawResource -> RawResource -> Resource
-hydrateResource includedData resource =
-  Resource
-    { resource
-      | relationships = hydrateRelationships includedData resource.relationships
+hydrateResource includedData (RawResource resourceId rawResourceObject) =
+  Resource resourceId
+    { rawResourceObject
+      | relationships = hydrateRelationships includedData rawResourceObject.relationships
     }
 
 
@@ -49,17 +50,10 @@ hydrateSingleRelationship includedData relationshipName relationship =
   case relationship.data of
     One relationshipData ->
       let
-        relatedId =
-          relationshipData.id
-
-        relatedType =
-          relationshipData.resourceType
-
         maybeData =
-          List.head
-            <| List.filter
-                (\resource -> resource.id == relatedId && resource.resourceType == relatedType)
-                includedData
+          List.Extra.find
+            (\(RawResource ident _) -> ident == relationshipData)
+            includedData
 
         recursivelyHydratedMaybeData = Maybe.map (hydrateData includedData) (Maybe.map One maybeData)
       in
@@ -67,15 +61,9 @@ hydrateSingleRelationship includedData relationshipName relationship =
 
     Many relationshipDataList ->
       let
-        relatedIds =
-          List.map (\record -> record.id) relationshipDataList
-
-        relatedTypes =
-          List.map (\record -> record.resourceType) relationshipDataList
-
         hydratedRelationshipDataList =
           List.filter
-            (\resource -> (List.member resource.id relatedIds) && (List.member resource.resourceType relatedTypes))
+            (\(RawResource ident _) -> List.member ident relationshipDataList)
             includedData
 
         recursivelyHydratedDataList = hydrateData includedData (Many hydratedRelationshipDataList)
@@ -110,9 +98,12 @@ rawData =
 
 rawResource : Decoder RawResource
 rawResource =
-  decode RawResource
-    |> required "id" string
-    |> required "type" string
+  object2 RawResource resourceIdentifier rawResourceObject
+
+
+rawResourceObject : Decoder RawResourceObject
+rawResourceObject =
+  decode RawResourceObject
     |> optional "attributes" attributes Dict.empty
     |> optional "relationships" rawRelationships Dict.empty
     |> optional "links" links emptyLinks
