@@ -8,54 +8,35 @@ module JsonApi.Decode (..) where
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 import Result exposing (Result)
-import Dict exposing (Dict, get, map)
+import Dict
+
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..))
-
-
-{-| Represents a resource whose relationships have been hydrated with pointers to other resources.
--}
-type alias HydratedResource =
-  { id : String
-  , resourceType : String
-  , attributes : Attributes
-  , relationships : HydratedRelationships
-  , links : Links
-  }
-
-
-{-| A Dictionary with HydratedRelationship records as values.
--}
-type alias HydratedRelationships =
-  Dict String HydratedRelationship
-
-
-{-| A relationships object whose data has been updated with full data from the 'included' resources,
-rather than just containing 'id' and 'type'.
--}
-type alias HydratedRelationship =
-  { data : Maybe Data
-  , links : Links
-  , meta : Meta
-  }
+import JsonApi.Data exposing (..)
 
 
 {-| Retrieve the primary resource from a JSONAPI payload. This function assumes a singular primary resource.
 -}
-primary : Json.Decode.Decoder (OneOrMany HydratedResource)
+primary : Json.Decode.Decoder HydratedData
 primary =
   Json.Decode.customDecoder document (\doc -> Ok (hydratePrimary doc))
 
 
-hydratePrimary : Document -> OneOrMany HydratedResource
+hydratePrimary : Document -> HydratedData
 hydratePrimary doc =
-  OneOrMany.map (hydrateResource doc.included) doc.data
+  hydrateData doc.included doc.data
+
+
+hydrateData : List Resource -> Data -> HydratedData
+hydrateData includedData data =
+  OneOrMany.map (hydrateResource includedData) data
 
 
 hydrateResource : List Resource -> Resource -> HydratedResource
 hydrateResource includedData resource =
-  { resource
-    | relationships = hydrateRelationships includedData resource.relationships
-  }
+  HydratedResource
+    { resource
+      | relationships = hydrateRelationships includedData resource.relationships
+    }
 
 
 hydrateRelationships : List Resource -> Relationships -> HydratedRelationships
@@ -79,8 +60,10 @@ hydrateSingleRelationship includedData relationshipName relationship =
             <| List.filter
                 (\resource -> resource.id == relatedId && resource.resourceType == relatedType)
                 includedData
+
+        recursivelyHydratedMaybeData = Maybe.map (hydrateData includedData) (Maybe.map Singleton maybeData)
       in
-        { relationship | data = Maybe.map Singleton maybeData }
+        { relationship | data = recursivelyHydratedMaybeData }
 
     Collection relationshipDataList ->
       let
@@ -94,81 +77,11 @@ hydrateSingleRelationship includedData relationshipName relationship =
           List.filter
             (\resource -> (List.member resource.id relatedIds) && (List.member resource.resourceType relatedTypes))
             includedData
+
+        recursivelyHydratedDataList = hydrateData includedData (Collection hydratedRelationshipDataList)
       in
-        { relationship | data = Just (Collection hydratedRelationshipDataList) }
+        { relationship | data = Just recursivelyHydratedDataList }
 
-
-type alias Document =
-  { data : Data
-  , included : List Resource
-  , links : Links
-  , meta : Meta
-  }
-
-
-type alias Data =
-  OneOrMany Resource
-
-
-type alias Resource =
-  { id : String
-  , resourceType : String
-  , attributes : Attributes
-  , relationships : Relationships
-  , links : Links
-  }
-
-
-type alias Relationships =
-  Dict String Relationship
-
-
-type alias Relationship =
-  { data : RelationshipData
-  , links : Links
-  , meta : Meta
-  }
-
-
-type alias RelationshipData =
-  OneOrMany ResourceIdentifier
-
-
-type alias ResourceIdentifier =
-  { id : String, resourceType : String }
-
-
-type alias Links =
-  { self : Link
-  , related : Link
-  , first : Link
-  , last : Link
-  , prev : Link
-  , next : Link
-  }
-
-
-emptyLinks : Links
-emptyLinks =
-  { self = Nothing
-  , related = Nothing
-  , first = Nothing
-  , last = Nothing
-  , prev = Nothing
-  , next = Nothing
-  }
-
-
-type alias Attributes =
-  Dict String Value
-
-
-type alias Meta =
-  Maybe Value
-
-
-type alias Link =
-  Maybe String
 
 
 {-| Decode a JSONAPI-compliant payload.

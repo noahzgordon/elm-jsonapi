@@ -3,9 +3,11 @@ module JsonApi.Test.Decode (suite) where
 import ElmTest as Test
 import Dict
 import Debug
+import List.Extra
 import Json.Encode
 import Json.Decode exposing (decodeString)
-import JsonApi.Decode exposing (emptyLinks, Document)
+import JsonApi.Decode
+import JsonApi.Data exposing (Document, HydratedResource(..), emptyLinks)
 import JsonApi.OneOrMany exposing (OneOrMany(..))
 import Graphics.Element exposing (Element)
 
@@ -37,7 +39,7 @@ primary =
                 Nothing ->
                   Debug.crash "Expected non-empty collection"
 
-                Just primaryResource ->
+                Just (HydratedResource primaryResource) ->
                   primaryResource
 
     relatedCommentResource =
@@ -54,11 +56,11 @@ primary =
               Debug.crash "Expected comment relationship to be a collection"
 
             Just (Collection commentResources) ->
-              case (List.head <| List.filter (\resource -> resource.id == "12") commentResources) of
+              case (List.Extra.find (\(HydratedResource resource) -> resource.id == "12") commentResources) of
                 Nothing ->
                   Debug.crash "Expected to find related comment with id 12"
 
-                Just commentResource ->
+                Just (HydratedResource commentResource) ->
                   commentResource
 
     relatedCommentAuthorResource =
@@ -74,7 +76,7 @@ primary =
             Just (Collection _) ->
               Debug.crash "Expected author relationship to be a singleton"
 
-            Just (Singleton authorResource) ->
+            Just (Singleton (HydratedResource authorResource)) ->
               authorResource
 
     primaryAttributesAreDecoded =
