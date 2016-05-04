@@ -16,35 +16,35 @@ import JsonApi.Data exposing (..)
 
 {-| Retrieve the primary resource from a JSONAPI payload. This function assumes a singular primary resource.
 -}
-primary : Json.Decode.Decoder HydratedData
+primary : Json.Decode.Decoder Data
 primary =
   Json.Decode.customDecoder document (\doc -> Ok (hydratePrimary doc))
 
 
-hydratePrimary : Document -> HydratedData
+hydratePrimary : Document -> Data
 hydratePrimary doc =
   hydrateData doc.included doc.data
 
 
-hydrateData : List Resource -> Data -> HydratedData
+hydrateData : List RawResource -> RawData -> Data
 hydrateData includedData data =
   OneOrMany.map (hydrateResource includedData) data
 
 
-hydrateResource : List Resource -> Resource -> HydratedResource
+hydrateResource : List RawResource -> RawResource -> Resource
 hydrateResource includedData resource =
-  HydratedResource
+  Resource
     { resource
       | relationships = hydrateRelationships includedData resource.relationships
     }
 
 
-hydrateRelationships : List Resource -> Relationships -> HydratedRelationships
+hydrateRelationships : List RawResource -> RawRelationships -> Relationships
 hydrateRelationships includedData relationships =
   Dict.map (hydrateSingleRelationship includedData) relationships
 
 
-hydrateSingleRelationship : List Resource -> String -> Relationship -> HydratedRelationship
+hydrateSingleRelationship : List RawResource -> String -> RawRelationship -> Relationship
 hydrateSingleRelationship includedData relationshipName relationship =
   case relationship.data of
     One relationshipData ->
@@ -89,8 +89,8 @@ hydrateSingleRelationship includedData relationshipName relationship =
 document : Decoder Document
 document =
   decode Document
-    |> required "data" data
-    |> optional "included" (list resource) []
+    |> required "data" rawData
+    |> optional "included" (list rawResource) []
     |> optional "links" links emptyLinks
     |> optional "meta" meta Nothing
 
@@ -100,21 +100,21 @@ meta =
   maybe value
 
 
-data : Decoder Data
-data =
+rawData : Decoder RawData
+rawData =
   oneOf
-    [ Json.Decode.map Many (list resource)
-    , Json.Decode.map One resource
+    [ Json.Decode.map Many (list rawResource)
+    , Json.Decode.map One rawResource
     ]
 
 
-resource : Decoder Resource
-resource =
-  decode Resource
+rawResource : Decoder RawResource
+rawResource =
+  decode RawResource
     |> required "id" string
     |> required "type" string
     |> optional "attributes" attributes Dict.empty
-    |> optional "relationships" relationships Dict.empty
+    |> optional "relationships" rawRelationships Dict.empty
     |> optional "links" links emptyLinks
 
 
@@ -139,21 +139,21 @@ attributes =
   dict value
 
 
-relationships : Decoder Relationships
-relationships =
-  dict relationship
+rawRelationships : Decoder RawRelationships
+rawRelationships =
+  dict rawRelationship
 
 
-relationship : Decoder Relationship
-relationship =
-  decode Relationship
-    |> required "data" relationshipData
+rawRelationship : Decoder RawRelationship
+rawRelationship =
+  decode RawRelationship
+    |> required "data" rawRelationshipData
     |> optional "links" links emptyLinks
     |> optional "meta" meta Nothing
 
 
-relationshipData : Decoder RelationshipData
-relationshipData =
+rawRelationshipData : Decoder RawRelationshipData
+rawRelationshipData =
   oneOf
     [ Json.Decode.map Many (list resourceIdentifier)
     , Json.Decode.map One resourceIdentifier

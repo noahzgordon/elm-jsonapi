@@ -4,50 +4,10 @@ import Dict exposing (Dict)
 import Json.Decode
 import JsonApi.OneOrMany exposing (OneOrMany)
 
-{-| Represents a resource or resource collection whose relationships have been hydrated with pointers to other resources.
--}
-type alias HydratedData =
-  OneOrMany HydratedResource
-
-{-| Represents a resource whose relationships have been hydrated with pointers to other resources.
--}
-type HydratedResource = HydratedResource
-  { id : String
-  , resourceType : String
-  , attributes : Attributes
-  , relationships : HydratedRelationships
-  , links : Links
-  }
-
-
-{-| A Dictionary with HydratedRelationship records as values.
--}
-type alias HydratedRelationships =
-  Dict String HydratedRelationship
-
-
-{-| A relationships object whose data has been updated with full data from the 'included' resources,
-rather than just containing 'id' and 'type'.
--}
-type alias HydratedRelationship =
-  { data : Maybe HydratedData
-  , links : Links
-  , meta : Meta
-  }
-
-type alias Document =
-  { data : Data
-  , included : List Resource
-  , links : Links
-  , meta : Meta
-  }
-
-
 type alias Data =
   OneOrMany Resource
 
-
-type alias Resource =
+type Resource = Resource
   { id : String
   , resourceType : String
   , attributes : Attributes
@@ -61,13 +21,47 @@ type alias Relationships =
 
 
 type alias Relationship =
-  { data : RelationshipData
+  { data : Maybe Data
   , links : Links
   , meta : Meta
   }
 
 
-type alias RelationshipData =
+{- Raw data types; not exposed -}
+
+type alias Document =
+  { data : RawData
+  , included : List RawResource
+  , links : Links
+  , meta : Meta
+  }
+
+
+type alias RawData =
+  OneOrMany RawResource
+
+
+type alias RawResource =
+  { id : String
+  , resourceType : String
+  , attributes : Attributes
+  , relationships : RawRelationships
+  , links : Links
+  }
+
+
+type alias RawRelationships =
+  Dict String RawRelationship
+
+
+type alias RawRelationship =
+  { data : RawRelationshipData
+  , links : Links
+  , meta : Meta
+  }
+
+
+type alias RawRelationshipData =
   OneOrMany ResourceIdentifier
 
 

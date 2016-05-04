@@ -7,7 +7,7 @@ import List.Extra
 import Json.Encode
 import Json.Decode exposing (decodeString)
 import JsonApi.Decode
-import JsonApi.Data exposing (Document, HydratedResource(..), emptyLinks)
+import JsonApi.Data exposing (Document, Resource(..), emptyLinks)
 import JsonApi.OneOrMany exposing (OneOrMany(..))
 import Graphics.Element exposing (Element)
 
@@ -37,7 +37,7 @@ primary =
                 Nothing ->
                   Debug.crash "Expected non-empty collection"
 
-                Just (HydratedResource primaryResource) ->
+                Just (Resource primaryResource) ->
                   primaryResource
 
     relatedCommentResource =
@@ -54,11 +54,11 @@ primary =
               Debug.crash "Expected comment relationship to be a collection"
 
             Just (Many commentResources) ->
-              case (List.Extra.find (\(HydratedResource resource) -> resource.id == "12") commentResources) of
+              case (List.Extra.find (\(Resource resource) -> resource.id == "12") commentResources) of
                 Nothing ->
                   Debug.crash "Expected to find related comment with id 12"
 
-                Just (HydratedResource commentResource) ->
+                Just (Resource commentResource) ->
                   commentResource
 
     relatedCommentAuthorResource =
@@ -74,7 +74,7 @@ primary =
             Just (Many _) ->
               Debug.crash "Expected author relationship to be a singleton"
 
-            Just (One (HydratedResource authorResource)) ->
+            Just (One (Resource authorResource)) ->
               authorResource
 
     primaryAttributesAreDecoded =
