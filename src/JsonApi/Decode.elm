@@ -1,8 +1,8 @@
-module JsonApi.Decode (..) where
+module JsonApi.Decode (primary) where
 
 {-| Library for decoding JSONAPI-compliant payloads
 
-@docs document
+@docs primary
 -}
 
 import Json.Decode exposing (..)
