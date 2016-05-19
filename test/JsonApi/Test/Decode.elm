@@ -1,4 +1,4 @@
-module JsonApi.Test.Decode (suite) where
+module JsonApi.Test.Decode exposing (suite)
 
 import ElmTest as Test
 import Dict

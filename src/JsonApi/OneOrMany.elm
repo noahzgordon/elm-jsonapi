@@ -1,4 +1,4 @@
-module JsonApi.OneOrMany (..) where
+module JsonApi.OneOrMany exposing (..)
 
 
 type OneOrMany a

@@ -1,4 +1,4 @@
-module JsonApi.Data (..) where
+module JsonApi.Data exposing (..)
 
 import Dict exposing (Dict)
 import Json.Decode

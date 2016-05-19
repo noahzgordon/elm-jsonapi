@@ -1,4 +1,4 @@
-module JsonApi.Decode (primary) where
+module JsonApi.Decode exposing (primary)
 
 {-| Library for decoding JSONAPI-compliant payloads
 
