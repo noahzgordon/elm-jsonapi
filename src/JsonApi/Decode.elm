@@ -1,8 +1,8 @@
-module JsonApi.Decode exposing (primary)
+module JsonApi.Decode exposing (primaryResource, primaryResourceCollection)
 
 {-| Library for decoding JSONAPI-compliant payloads
 
-@docs primary
+@docs primaryResource, primaryResourceCollection
 -}
 
 import Json.Decode exposing (..)
@@ -11,20 +11,31 @@ import Result exposing (Result)
 import Dict
 import List.Extra
 
-import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..))
+import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
 
 
 {-| Retrieve the primary resource from a JSONAPI payload. This function assumes a singular primary resource.
 -}
-primary : Json.Decode.Decoder Data
-primary =
-  Json.Decode.customDecoder document (\doc -> Ok (hydratePrimary doc))
+primaryResource : Json.Decode.Decoder Resource
+primaryResource =
+  let
+    handleDecodedDocument doc =
+      Result.map (hydrateResource doc.included) (extractOne doc.data)
 
+  in
+    Json.Decode.customDecoder document handleDecodedDocument
 
-hydratePrimary : Document -> Data
-hydratePrimary doc =
-  hydrateData doc.included doc.data
+{-| Retrieve the primary resource from a JSONAPI payload. This function assumes a singular primary resource.
+-}
+primaryResourceCollection : Json.Decode.Decoder (List Resource)
+primaryResourceCollection =
+  let
+    handleDecodedDocument doc =
+      Result.map (List.map (hydrateResource doc.included)) (extractMany doc.data)
+
+  in
+    Json.Decode.customDecoder document handleDecodedDocument
 
 
 hydrateData : List RawResource -> RawData -> Data

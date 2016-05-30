@@ -16,21 +16,21 @@ map fn oneOrMany =
       Many (List.map fn xs)
 
 
-mapToResult : (a -> Result String b) -> OneOrMany a -> Result String (OneOrMany b)
-mapToResult fn oneOrMany =
+extractOne : OneOrMany a -> Result String a
+extractOne oneOrMany =
   case oneOrMany of
     One x ->
-      Result.map One (fn x)
+      Ok x
 
     Many xs ->
-      let
-        foldFn x resultList =
-          case fn x of
-            Ok result ->
-              Result.map ((::) result) resultList
-            Err string ->
-              Err string
-      in
-        Result.map Many (List.foldl foldFn (Ok []) xs)
+      Err "Expected a singleton resource, got a collection"
 
--- (item -> result -> result) -> acc -> iter
+
+extractMany : OneOrMany a -> Result String (List a)
+extractMany oneOrMany =
+ case oneOrMany of
+    One x ->
+      Err "Expected a collection of resources, got a singleton"
+
+    Many xs ->
+      Ok xs
