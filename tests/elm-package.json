@@ -1,0 +1,19 @@
+{
+    "version": "1.0.0",
+    "summary": "Tests for elm-jsonapi",
+    "repository": "http://github.com/noahzgordon/elm-jsonapi.git",
+    "license": "BSD3",
+    "source-directories": [
+        ".",
+        "../src"
+    ],
+    "exposed-modules": [],
+    "native-modules": true,
+    "dependencies": {
+        "NoRedInk/elm-decode-pipeline": "1.0.0 <= v < 2.0.0",
+        "elm-community/elm-test": "1.0.0 <= v < 2.0.0",
+        "elm-community/list-extra": "2.0.0 <= v < 3.0.0",
+        "elm-lang/core": "4.0.1 <= v < 5.0.0"
+    },
+    "elm-version": "0.17.0 <= v < 0.18.0"
+}

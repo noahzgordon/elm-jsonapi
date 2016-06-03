@@ -1,4 +1,5 @@
 elm-stuff/*
 elm.js
 
-tmp/*
+tests/elm-stuff/*
+tests/test.js

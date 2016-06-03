@@ -1,4 +1,4 @@
-module JsonApi.Test.Main exposing (..)
+module Test.JsonApi exposing (suite)
 
 import ElmTest as Test
 import Dict
@@ -10,10 +10,6 @@ import JsonApi
 import JsonApi.Decode
 import JsonApi.Data exposing (Resource(..), emptyLinks)
 import JsonApi.OneOrMany exposing (OneOrMany(..))
-
-
-main =
-  Test.runSuiteHtml suite
 
 
 suite : Test.Test
