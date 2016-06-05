@@ -1,85 +1,17 @@
-module JsonApi.Decode exposing (primaryResource, primaryResourceCollection)
+module JsonApi.Decode exposing (document)
 
 {-| Library for decoding JSONAPI-compliant payloads
 
-@docs primaryResource, primaryResourceCollection
+@docs document
 -}
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 import Result exposing (Result)
 import Dict
-import List.Extra
 
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
-
-
-{-| Retrieve the primary resource from a JSONAPI payload. This function assumes a singular primary resource.
--}
-primaryResource : Json.Decode.Decoder Resource
-primaryResource =
-  let
-    handleDecodedDocument doc =
-      Result.map (hydrateResource doc.included) (extractOne doc.data)
-
-  in
-    Json.Decode.customDecoder document handleDecodedDocument
-
-{-| Retrieve the primary resource from a JSONAPI payload. This function assumes a singular primary resource.
--}
-primaryResourceCollection : Json.Decode.Decoder (List Resource)
-primaryResourceCollection =
-  let
-    handleDecodedDocument doc =
-      Result.map (List.map (hydrateResource doc.included)) (extractMany doc.data)
-
-  in
-    Json.Decode.customDecoder document handleDecodedDocument
-
-
-hydrateData : List RawResource -> RawData -> Data
-hydrateData includedData data =
-  OneOrMany.map (hydrateResource includedData) data
-
-
-hydrateResource : List RawResource -> RawResource -> Resource
-hydrateResource includedData (RawResource resourceId rawResourceObject) =
-  Resource resourceId
-    { rawResourceObject
-      | relationships = hydrateRelationships includedData rawResourceObject.relationships
-    }
-
-
-hydrateRelationships : List RawResource -> RawRelationships -> Relationships
-hydrateRelationships includedData relationships =
-  Dict.map (hydrateSingleRelationship includedData) relationships
-
-
-hydrateSingleRelationship : List RawResource -> String -> RawRelationship -> Relationship
-hydrateSingleRelationship includedData relationshipName relationship =
-  case relationship.data of
-    One relationshipData ->
-      let
-        maybeData =
-          List.Extra.find
-            (\(RawResource ident _) -> ident == relationshipData)
-            includedData
-
-        recursivelyHydratedMaybeData = Maybe.map (hydrateData includedData) (Maybe.map One maybeData)
-      in
-        { relationship | data = recursivelyHydratedMaybeData }
-
-    Many relationshipDataList ->
-      let
-        hydratedRelationshipDataList =
-          List.filter
-            (\(RawResource ident _) -> List.member ident relationshipDataList)
-            includedData
-
-        recursivelyHydratedDataList = hydrateData includedData (Many hydratedRelationshipDataList)
-      in
-        { relationship | data = Just recursivelyHydratedDataList }
 
 
 

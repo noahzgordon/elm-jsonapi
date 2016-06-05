@@ -8,14 +8,25 @@ import Json.Encode
 import Json.Decode exposing (decodeString)
 import JsonApi
 import JsonApi.Decode
-import JsonApi.Data exposing (Resource(..), emptyLinks)
+import JsonApi.Data exposing (Document, Resource(..), emptyLinks)
 import JsonApi.OneOrMany exposing (OneOrMany(..))
+import Test.Examples exposing (validPayload)
+
+
+exampleDocument : Document
+exampleDocument =
+  case decodeString JsonApi.Decode.document validPayload of
+    Ok doc ->
+      doc
+
+    Err string ->
+      Debug.crash string
 
 
 suite : Test.Test
 suite =
   Test.suite
-    "JsonApi Decoders"
+    "JsonApi core functions"
     [ primaryResource
     , primaryResourceCollection
     ]
@@ -27,7 +38,7 @@ primaryResource =
     "it returns an error when used incorrectly"
     (Test.assertEqual
       (Err "Expected a singleton resource, got a collection") 
-      (decodeString JsonApi.Decode.primaryResource examplePayload)
+      (JsonApi.primaryResource exampleDocument)
     )
 
 
@@ -35,7 +46,7 @@ primaryResourceCollection : Test.Test
 primaryResourceCollection =
   let
     decodedPrimaryResource =
-      case decodeString JsonApi.Decode.primaryResourceCollection examplePayload of
+      case JsonApi.primaryResourceCollection exampleDocument of
         Err string ->
           Debug.crash string
 
