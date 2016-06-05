@@ -4,13 +4,21 @@ elm-jsonapi decodes any JSON API compliant payload and provides helper functions
 
 ```
 import Http
-import JsonApi.Decode exposing (primary)
+import JsonApi exposing (primaryResource)
+import JsonApi.Decode exposing (document)
 import Task exposing (..)
 
 
-getUserResource : String -> Task Http.Error (JsonApi.Resource)
+getUserResource : String -> Task Http.Error (JsonApi.Document)
 getUserResource query =
-    Http.get primary ("http://www.jsonapi-compliant-server.com/users/" ++ query)
+    Http.get document ("http://www.jsonapi-compliant-server.com/users/" ++ query)
+
+extractUsername : JsonApi.Document -> Maybe String
+extractUsername doc =
+  primaryResource doc
+    |> Result.toMaybe
+    |> Maybe.map JsonApi.attributes
+    `Maybe.andThen` (Dict.get "username")
 ```
 
 ## contributing
