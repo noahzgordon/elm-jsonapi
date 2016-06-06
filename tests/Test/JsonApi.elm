@@ -10,40 +10,31 @@ import JsonApi
 import JsonApi.Decode
 import JsonApi.Data exposing (Document, Resource(..), emptyLinks)
 import JsonApi.OneOrMany exposing (OneOrMany(..))
-import Test.Examples exposing (validPayload)
-
-
-exampleDocument : Document
-exampleDocument =
-  case decodeString JsonApi.Decode.document validPayload of
-    Ok doc ->
-      doc
-
-    Err string ->
-      Debug.crash string
+import Test.Examples exposing (validPayload, recursivePayload)
 
 
 suite : Test.Test
 suite =
   Test.suite
     "JsonApi core functions"
-    [ primaryResource
-    , primaryResourceCollection
+    [ primaryResourceErrors
+    , resourceChaining
+    , resourceCircularReferences
     ]
 
 
-primaryResource : Test.Test
-primaryResource =
+primaryResourceErrors : Test.Test
+primaryResourceErrors =
   Test.test
     "it returns an error when used incorrectly"
     (Test.assertEqual
-      (Err "Expected a singleton resource, got a collection") 
+      (Err "Expected a singleton resource, got a collection")
       (JsonApi.primaryResource exampleDocument)
     )
 
 
-primaryResourceCollection : Test.Test
-primaryResourceCollection =
+resourceChaining : Test.Test
+resourceChaining =
   let
     decodedPrimaryResource =
       case JsonApi.primaryResourceCollection exampleDocument of
@@ -67,7 +58,7 @@ primaryResourceCollection =
           Debug.crash string
 
         Ok commentResources ->
-          case (List.Extra.find (\(Resource ident _) -> ident.id == "12") commentResources) of
+          case (List.Extra.find (\(Resource ident _ _) -> ident.id == "12") commentResources) of
             Nothing ->
               Debug.crash "Expected to find related comment with id 12"
 
@@ -113,4 +104,36 @@ primaryResourceCollection =
 
 
 resourceCircularReferences : Test.Test
+resourceCircularReferences =
+  let
+    primaryResourceResult =
+      decodeString JsonApi.Decode.document recursivePayload
+        `Result.andThen` JsonApi.primaryResource
+        `Result.andThen` (JsonApi.relatedResource "author")
+        `Result.andThen` (JsonApi.relatedResource "article")
+
+    primaryResourceTitle =
+      case primaryResourceResult of
+        Ok resource ->
+          Dict.get "title" (JsonApi.attributes resource)
+
+        Err string ->
+          Debug.crash string
+
+  in
+    Test.test "it can handle circular references in the payload"
+      (Test.assertEqual
+        (Just (Json.Encode.string "JSON API paints my bikeshed!"))
+        primaryResourceTitle
+      )
+
+exampleDocument : Document
+exampleDocument =
+  case decodeString JsonApi.Decode.document validPayload of
+    Ok doc ->
+      doc
+
+    Err string ->
+      Debug.crash string
+
 

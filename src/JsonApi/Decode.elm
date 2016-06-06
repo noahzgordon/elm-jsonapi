@@ -20,8 +20,8 @@ import JsonApi.Data exposing (..)
 document : Decoder Document
 document =
   decode Document
-    |> required "data" rawData
-    |> optional "included" (list rawResource) []
+    |> required "data" data
+    |> optional "included" (list resource) []
     |> optional "links" links emptyLinks
     |> optional "meta" meta Nothing
 
@@ -31,24 +31,24 @@ meta =
   maybe value
 
 
-rawData : Decoder RawData
-rawData =
+data : Decoder (OneOrMany RawResource)
+data =
   oneOf
-    [ Json.Decode.map Many (list rawResource)
-    , Json.Decode.map One rawResource
+    [ Json.Decode.map Many (list resource)
+    , Json.Decode.map One resource
     ]
 
 
-rawResource : Decoder RawResource
-rawResource =
-  object2 RawResource resourceIdentifier rawResourceObject
+resource : Decoder RawResource
+resource =
+  object2 RawResource resourceIdentifier resourceObject
 
 
-rawResourceObject : Decoder RawResourceObject
-rawResourceObject =
-  decode RawResourceObject
+resourceObject : Decoder ResourceObject
+resourceObject =
+  decode ResourceObject
     |> optional "attributes" attributes Dict.empty
-    |> optional "relationships" rawRelationships Dict.empty
+    |> optional "relationships" relationships Dict.empty
     |> optional "links" links emptyLinks
 
 
@@ -73,21 +73,21 @@ attributes =
   dict value
 
 
-rawRelationships : Decoder RawRelationships
-rawRelationships =
-  dict rawRelationship
+relationships : Decoder Relationships
+relationships =
+  dict relationship
 
 
-rawRelationship : Decoder RawRelationship
-rawRelationship =
-  decode RawRelationship
-    |> required "data" rawRelationshipData
+relationship : Decoder Relationship
+relationship =
+  decode Relationship
+    |> required "data" relationshipData
     |> optional "links" links emptyLinks
     |> optional "meta" meta Nothing
 
 
-rawRelationshipData : Decoder RawRelationshipData
-rawRelationshipData =
+relationshipData : Decoder (OneOrMany ResourceIdentifier)
+relationshipData =
   oneOf
     [ Json.Decode.map Many (list resourceIdentifier)
     , Json.Decode.map One resourceIdentifier
