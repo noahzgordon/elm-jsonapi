@@ -86,8 +86,44 @@ validPayload =
 invalidPayload : String
 invalidPayload =
   """
-    "data": [{
-      "tpe": "articles",
-      "id": "1",
-    }]
+    {
+      "data": [{
+        "tpe": "articles",
+        "id": "1",
+      }]
+    }
+  """
+
+
+recursivePayload : String
+recursivePayload =
+  """
+    {
+      "data": {
+        "type": "articles",
+        "id": "1",
+        "attributes": {
+          "title": "JSON API paints my bikeshed!"
+        },
+        "relationships": {
+          "author": {
+            "data": { "type": "people", "id": "9" }
+          }
+        }
+      },
+      "included": [{
+        "type": "people",
+        "id": "9",
+        "attributes": {
+          "first-name": "Dan",
+          "last-name": "Gebhardt",
+          "twitter": "dgeb"
+        },
+        "relationships": {
+          "article": {
+            "data": { "type": "articles", "id": "1" }
+          }
+        }
+      }]
+    }
   """
