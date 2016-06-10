@@ -10,7 +10,7 @@ type alias Data =
 
 
 type Resource
-  = Resource ResourceIdentifier ResourceObject
+  = Resource ResourceIdentifier ResourceObject (List RawResource)
 
 
 type alias ResourceIdentifier =
