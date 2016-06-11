@@ -58,7 +58,7 @@ resourceChaining =
           Debug.crash string
 
         Ok commentResources ->
-          case (List.Extra.find (\(Resource ident _) -> ident.id == "12") commentResources) of
+          case (List.Extra.find (\(Resource ident _ _) -> ident.id == "12") commentResources) of
             Nothing ->
               Debug.crash "Expected to find related comment with id 12"
 

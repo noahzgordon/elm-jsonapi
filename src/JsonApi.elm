@@ -23,7 +23,7 @@ import List.Extra
 attributes : Resource -> Attributes
 attributes resource =
   let
-    (Resource identifier object) = resource
+    (Resource _ object _) = resource
 
   in
     object.attributes
@@ -33,9 +33,9 @@ attributes resource =
 -}
 primaryResource : Document -> Result String Resource
 primaryResource doc =
-  Result.map (hydrateResource doc.included) (extractOne doc.data)
+  Result.map (hydratePrimaryResource doc.included) (extractOne doc.data)
 
-{-| Retrieve the primary resource from a decoded Document. 
+{-| Retrieve the primary resource from a decoded Document.
     This function assumes a singular primary resource.
 -}
 primaryResourceCollection : Document -> Result String (List Resource)
@@ -66,28 +66,39 @@ related relationshipName (Resource identifier resourceObject relatedResources) =
 
     Just relationship ->
       case relationship.data of
-        Nothing ->
-          Err ("No resources found for the relationship '" ++ relationshipName ++ "'")
+        One relIdentifier ->
+          Result.map One (getRelatedResource relatedResources relIdentifier)
 
-        Just resourceData ->
-          resourceData
-            |> OneOrMany.map (getRelatedResource relatedResources)
-            |> Ok
+        Many relIdentifiers ->
+          Result.map Many (getRelatedCollection relatedResources relIdentifiers)
 
 
--- getRelatedResource : List RawResource -> RawResource -> Result String Resource
--- getRelatedResource relatedResources resource =
-  -- let
-    -- compareResources (RawResource id1 _ _) (RawResource id2 _ _) =
-      -- id1 == id2
+getRelatedResource : List RawResource -> ResourceIdentifier -> Result String Resource
+getRelatedResource relatedResources identifier =
+  let
+    compare (RawResource id _) =
+      id == identifier
 
-  -- in
-    -- List.Extra.find (compareResources resource) relatedResources
-      -- |> Maybe.map (hydrateResource relatedResources)
+  in
+    List.Extra.find compare relatedResources
+      |> Maybe.map (hydrateResource relatedResources)
+      |> Result.fromMaybe ("Could not find related resource with identifier" ++ toString identifier)
+
+
+getRelatedCollection : List RawResource -> List ResourceIdentifier -> Result String (List Resource)
+getRelatedCollection relatedResources identifiers =
+  let
+    compare (RawResource id _) =
+      List.member id identifiers
+
+  in
+    List.filter compare relatedResources
+      |> List.map (hydrateResource relatedResources)
+      |> Ok
 
 
 hydratePrimaryResource : List RawResource -> RawResource -> Resource
-hydrateResource relatedResources resource =
+hydratePrimaryResource relatedResources resource =
   let
     (RawResource id obj) = resource
 
@@ -95,55 +106,6 @@ hydrateResource relatedResources resource =
     Resource id obj (resource :: relatedResources)
 
 hydrateResource : List RawResource -> RawResource -> Resource
-hydrateResource relatedResources resource =
-  let
-    (RawResource id obj) = resource
-
-  in
-    Resource id obj (resource :: relatedResources)
-
-
--- hydrateData : List RawResource -> RawData -> Data
--- hydrateData includedData data =
-  -- OneOrMany.map (hydrateResource includedData) data
-
-
--- hydrateResource : List RawResource -> RawResource -> Resource
--- hydrateResource includedData (RawResource resourceId rawResourceObject) =
-  -- Resource resourceId
-    -- { rawResourceObject
-      -- | relationships = hydrateRelationships includedData rawResourceObject.relationships
-    -- }
-
-
--- hydrateRelationships : List RawResource -> RawRelationships -> Relationships
--- hydrateRelationships includedData relationships =
-  -- Dict.map (hydrateSingleRelationship includedData) relationships
-
-
--- hydrateSingleRelationship : List RawResource -> String -> RawRelationship -> Relationship
--- hydrateSingleRelationship includedData relationshipName relationship =
-  -- case relationship.data of
-    -- One relationshipData ->
-      -- let
-        -- maybeData =
-          -- List.Extra.find
-            -- (\(RawResource ident _) -> ident == relationshipData)
-            -- includedData
-
-        -- recursivelyHydratedMaybeData = Maybe.map (hydrateData includedData) (Maybe.map One maybeData)
-      -- in
-        -- { relationship | data = recursivelyHydratedMaybeData }
-
-    -- Many relationshipDataList ->
-      -- let
-        -- hydratedRelationshipDataList =
-          -- List.filter
-            -- (\(RawResource ident _) -> List.member ident relationshipDataList)
-            -- includedData
-
-        -- recursivelyHydratedDataList = hydrateData includedData (Many hydratedRelationshipDataList)
-      -- in
-        -- { relationship | data = Just recursivelyHydratedDataList }
-
+hydrateResource relatedResources (RawResource id obj) =
+  Resource id obj relatedResources
 

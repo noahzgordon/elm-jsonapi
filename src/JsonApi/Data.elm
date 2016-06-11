@@ -5,12 +5,20 @@ import Json.Decode
 import JsonApi.OneOrMany exposing (OneOrMany)
 
 
-type alias Data =
-  OneOrMany Resource
+type alias Document =
+  { data : OneOrMany RawResource
+  , included : List RawResource
+  , links : Links
+  , meta : Meta
+  }
 
 
 type Resource
   = Resource ResourceIdentifier ResourceObject (List RawResource)
+
+
+type RawResource
+  = RawResource ResourceIdentifier ResourceObject
 
 
 type alias ResourceIdentifier =
@@ -29,53 +37,10 @@ type alias Relationships =
 
 
 type alias Relationship =
-  { data : Maybe Data
+  { data : OneOrMany ResourceIdentifier
   , links : Links
   , meta : Meta
   }
-
-
-
-{- Raw data types; not exposed -}
-
-
-type alias Document =
-  { data : RawData
-  , included : List RawResource
-  , links : Links
-  , meta : Meta
-  }
-
-
-type alias RawData =
-  OneOrMany RawResource
-
-
-type RawResource
-  = RawResource ResourceIdentifier RawResourceObject
-
-
-type alias RawResourceObject =
-  { attributes : Attributes
-  , relationships : RawRelationships
-  , links : Links
-  }
-
-
-type alias RawRelationships =
-  Dict String RawRelationship
-
-
-type alias RawRelationship =
-  { data : RawRelationshipData
-  , links : Links
-  , meta : Meta
-  }
-
-
-type alias RawRelationshipData =
-  OneOrMany ResourceIdentifier
-
 
 type alias Links =
   { self : Link
