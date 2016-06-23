@@ -13,32 +13,31 @@ import Test.Examples exposing (..)
 
 suite : Test.Test
 suite =
-  Test.suite "JsonApi Decoders" [ document ]
+    Test.suite "JsonApi Decoders" [ document ]
 
 
 document : Test.Test
 document =
-  let
-    succeedsWithValidPayload =
-      Test.assert <| case decodeString JsonApi.Decode.document validPayload of
-        Ok _ ->
-          True
+    let
+        succeedsWithValidPayload =
+            Test.assert
+                <| case decodeString JsonApi.Decode.document validPayload of
+                    Ok _ ->
+                        True
 
-        Err _ ->
-          False
+                    Err _ ->
+                        False
 
-    failsWithInvalidPayload =
-      Test.assert <| case decodeString JsonApi.Decode.document invalidPayload of
-        Ok _ ->
-          False
+        failsWithInvalidPayload =
+            Test.assert
+                <| case decodeString JsonApi.Decode.document invalidPayload of
+                    Ok _ ->
+                        False
 
-        Err _ ->
-          True
-
-  in
-    Test.suite "document"
-      [ Test.test "can decode a valid JSON API payload" succeedsWithValidPayload
-      , Test.test "fails properly with invalid payload" failsWithInvalidPayload
-      ]
-
-
+                    Err _ ->
+                        True
+    in
+        Test.suite "document"
+            [ Test.test "can decode a valid JSON API payload" succeedsWithValidPayload
+            , Test.test "fails properly with invalid payload" failsWithInvalidPayload
+            ]

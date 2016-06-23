@@ -2,9 +2,10 @@ module Test.Examples exposing (..)
 
 {- example payload copied from JsonApi official website: http://jsonapi.org/ -}
 
+
 validPayload : String
 validPayload =
-  """
+    """
     {
       "jsonapi": {
         "version": "1.0",
@@ -87,9 +88,10 @@ validPayload =
     }
   """
 
+
 invalidPayload : String
 invalidPayload =
-  """
+    """
     {
       "data": [{
         "tpe": "articles",
@@ -101,7 +103,7 @@ invalidPayload =
 
 recursivePayload : String
 recursivePayload =
-  """
+    """
     {
       "data": {
         "type": "articles",

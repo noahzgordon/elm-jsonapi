@@ -9,102 +9,100 @@ import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 import Result exposing (Result)
 import Dict
-
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
-
 
 
 {-| Decode a JSONAPI-compliant payload.
 -}
 document : Decoder Document
 document =
-  decode Document
-    |> required "data" data
-    |> optional "included" (list resource) []
-    |> optional "links" links emptyLinks
-    |> optional "jsonapi" jsonApiObject Nothing
-    |> optional "meta" meta Nothing
+    decode Document
+        |> required "data" data
+        |> optional "included" (list resource) []
+        |> optional "links" links emptyLinks
+        |> optional "jsonapi" jsonApiObject Nothing
+        |> optional "meta" meta Nothing
 
 
 meta : Decoder Meta
 meta =
-  maybe value
+    maybe value
 
 
 jsonApiObject : Decoder (Maybe JsonApiObject)
 jsonApiObject =
-  decode JsonApiObject
-    |> optional "version" (maybe string) Nothing
-    |> optional "meta" meta Nothing
-    |> maybe
+    decode JsonApiObject
+        |> optional "version" (maybe string) Nothing
+        |> optional "meta" meta Nothing
+        |> maybe
 
 
 data : Decoder (OneOrMany RawResource)
 data =
-  oneOf
-    [ Json.Decode.map Many (list resource)
-    , Json.Decode.map One resource
-    ]
+    oneOf
+        [ Json.Decode.map Many (list resource)
+        , Json.Decode.map One resource
+        ]
 
 
 resource : Decoder RawResource
 resource =
-  object2 RawResource resourceIdentifier resourceObject
+    object2 RawResource resourceIdentifier resourceObject
 
 
 resourceObject : Decoder ResourceObject
 resourceObject =
-  decode ResourceObject
-    |> optional "attributes" attributes Dict.empty
-    |> optional "relationships" relationships Dict.empty
-    |> optional "links" links emptyLinks
+    decode ResourceObject
+        |> optional "attributes" attributes Dict.empty
+        |> optional "relationships" relationships Dict.empty
+        |> optional "links" links emptyLinks
 
 
 links : Decoder Links
 links =
-  decode Links
-    |> optional "self" link Nothing
-    |> optional "related" link Nothing
-    |> optional "first" link Nothing
-    |> optional "last" link Nothing
-    |> optional "prev" link Nothing
-    |> optional "next" link Nothing
+    decode Links
+        |> optional "self" link Nothing
+        |> optional "related" link Nothing
+        |> optional "first" link Nothing
+        |> optional "last" link Nothing
+        |> optional "prev" link Nothing
+        |> optional "next" link Nothing
 
 
 link : Decoder Link
 link =
-  maybe string
+    maybe string
 
 
 attributes : Decoder Attributes
 attributes =
-  dict value
+    dict value
 
 
 relationships : Decoder Relationships
 relationships =
-  dict relationship
+    dict relationship
 
 
 relationship : Decoder Relationship
 relationship =
-  decode Relationship
-    |> required "data" relationshipData
-    |> optional "links" links emptyLinks
-    |> optional "meta" meta Nothing
+    decode Relationship
+        |> required "data" relationshipData
+        |> optional "links" links emptyLinks
+        |> optional "meta" meta Nothing
 
 
 relationshipData : Decoder (OneOrMany ResourceIdentifier)
 relationshipData =
-  oneOf
-    [ Json.Decode.map Many (list resourceIdentifier)
-    , Json.Decode.map One resourceIdentifier
-    ]
+    oneOf
+        [ Json.Decode.map Many (list resourceIdentifier)
+        , Json.Decode.map One resourceIdentifier
+        ]
 
 
 resourceIdentifier : Decoder ResourceIdentifier
 resourceIdentifier =
-  decode ResourceIdentifier
-    |> required "id" string
-    |> required "type" string
+    decode ResourceIdentifier
+        |> required "id" string
+        |> required "type" string
