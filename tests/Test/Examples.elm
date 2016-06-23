@@ -6,6 +6,10 @@ validPayload : String
 validPayload =
   """
     {
+      "jsonapi": {
+        "version": "1.0",
+        "meta": { "foo": "bar" }
+      },
       "links": {
         "self": "http://example.com/articles",
         "next": "http://example.com/articles?page[offset]=2",

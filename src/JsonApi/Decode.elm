@@ -23,12 +23,21 @@ document =
     |> required "data" data
     |> optional "included" (list resource) []
     |> optional "links" links emptyLinks
+    |> optional "jsonapi" jsonApiObject Nothing
     |> optional "meta" meta Nothing
 
 
 meta : Decoder Meta
 meta =
   maybe value
+
+
+jsonApiObject : Decoder (Maybe JsonApiObject)
+jsonApiObject =
+  decode JsonApiObject
+    |> optional "version" (maybe string) Nothing
+    |> optional "meta" meta Nothing
+    |> maybe
 
 
 data : Decoder (OneOrMany RawResource)

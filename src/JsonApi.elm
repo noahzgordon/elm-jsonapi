@@ -4,12 +4,13 @@ module JsonApi exposing
   , primaryResourceCollection
   , relatedResource
   , relatedResourceCollection
+  , jsonapi
   )
 
 {-| Helper functions for dealing with Json Api payloads
 
 # Common Helpers
-@docs attributes, primaryResource, primaryResourceCollection, relatedResource, relatedResourceCollection
+@docs attributes, primaryResource, primaryResourceCollection, relatedResource, relatedResourceCollection, jsonapi
 
 -}
 import Dict
@@ -56,6 +57,12 @@ relatedResource relationshipName resource =
 relatedResourceCollection : String -> Resource -> Result String (List Resource)
 relatedResourceCollection relationshipName resource =
   (related relationshipName resource) `Result.andThen` extractMany
+
+{-| Fetch information from the top-level 'jsonapi' object
+-}
+jsonapi : Document -> Maybe JsonApiObject
+jsonapi doc =
+  doc.jsonapi
 
 
 related : String -> Resource -> Result String (OneOrMany Resource)

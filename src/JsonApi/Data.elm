@@ -9,6 +9,7 @@ type alias Document =
   { data : OneOrMany RawResource
   , included : List RawResource
   , links : Links
+  , jsonapi : Maybe JsonApiObject
   , meta : Meta
   }
 
@@ -49,6 +50,12 @@ type alias Links =
   , last : Link
   , prev : Link
   , next : Link
+  }
+
+
+type alias JsonApiObject =
+  { version : Maybe String
+  , meta : Meta
   }
 
 

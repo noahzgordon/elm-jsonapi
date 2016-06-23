@@ -20,6 +20,7 @@ suite =
     [ primaryResourceErrors
     , resourceChaining
     , resourceCircularReferences
+    , jsonapiObject
     ]
 
 
@@ -126,6 +127,21 @@ resourceCircularReferences =
         (Just (Json.Encode.string "JSON API paints my bikeshed!"))
         primaryResourceTitle
       )
+
+
+jsonapiObject : Test.Test
+jsonapiObject =
+  let
+    expectedResult =
+      Just
+        { version = Just "1.0"
+        , meta = Just (Json.Encode.object [("foo", Json.Encode.string "bar")])
+        }
+  in
+    Test.test "it can extract jsonapi object information"
+      (Test.assertEqual expectedResult (JsonApi.jsonapi exampleDocument))
+
+
 
 exampleDocument : Document
 exampleDocument =
