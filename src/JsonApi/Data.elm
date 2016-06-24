@@ -5,7 +5,11 @@ import Json.Decode
 import JsonApi.OneOrMany exposing (OneOrMany)
 
 
-type alias Document =
+type Document
+    = Document DocumentObject
+
+
+type alias DocumentObject =
     { data : OneOrMany RawResource
     , included : List RawResource
     , links : Links

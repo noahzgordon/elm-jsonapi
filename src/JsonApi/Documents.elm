@@ -22,7 +22,7 @@ import List.Extra
     This function assumes a singular primary resource.
 -}
 primaryResource : Document -> Result String Resource
-primaryResource doc =
+primaryResource (Document doc) =
     Result.map (hydratePrimaryResource doc.included) (extractOne doc.data)
 
 
@@ -30,14 +30,14 @@ primaryResource doc =
     This function assumes a singular primary resource.
 -}
 primaryResourceCollection : Document -> Result String (List Resource)
-primaryResourceCollection doc =
+primaryResourceCollection (Document doc) =
     Result.map (List.map (hydratePrimaryResource doc.included)) (extractMany doc.data)
 
 
 {-| Fetch information from the top-level 'jsonapi' object
 -}
 jsonapi : Document -> Maybe JsonApiObject
-jsonapi doc =
+jsonapi (Document doc) =
     doc.jsonapi
 
 

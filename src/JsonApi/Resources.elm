@@ -19,6 +19,9 @@ import JsonApi.Data exposing (..)
 import List.Extra
 
 
+type alias Resource = JsonApi.Data.Resource
+
+
 {-| Pull the attributes off of a Resource, so that you don't have to do the
     destructuring yourself.
 -}

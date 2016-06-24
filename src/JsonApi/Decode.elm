@@ -17,7 +17,12 @@ import JsonApi.Data exposing (..)
 -}
 document : Decoder Document
 document =
-    decode Document
+    object1 Document documentObject
+
+
+documentObject : Decoder DocumentObject
+documentObject =
+    decode DocumentObject
         |> required "data" data
         |> optional "included" (list resource) []
         |> optional "links" links emptyLinks
