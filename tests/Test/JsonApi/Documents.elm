@@ -6,11 +6,10 @@ import Debug
 import List.Extra
 import Json.Encode
 import Json.Decode exposing (decodeString)
-import JsonApi.Documents
+import JsonApi.Documents exposing (Document)
+import JsonApi.Resources exposing (Resource)
 import JsonApi.Decode
-import JsonApi.Resources
-import JsonApi.Data exposing (Document, Resource(..), emptyLinks)
-import JsonApi.OneOrMany exposing (OneOrMany(..))
+import JsonApi.Data exposing (emptyLinks)
 import Test.Examples exposing (validPayload, recursivePayload)
 
 
@@ -57,7 +56,7 @@ resourceChaining =
                     Debug.crash string
 
                 Ok commentResources ->
-                    case (List.Extra.find (\(Resource ident _ _) -> ident.id == "12") commentResources) of
+                    case (List.Extra.find (\resource -> (JsonApi.Resources.id resource) == "12") commentResources) of
                         Nothing ->
                             Debug.crash "Expected to find related comment with id 12"
 

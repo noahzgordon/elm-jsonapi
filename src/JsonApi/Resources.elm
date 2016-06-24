@@ -1,14 +1,16 @@
 module JsonApi.Resources
     exposing
-        ( attributes
+        ( id
+        , attributes
         , relatedResource
         , relatedResourceCollection
+        , Resource
         )
 
 {-| Helper functions for working with a single JsonApi Resource
 
 # Common Helpers
-@docs attributes, relatedResource, relatedResourceCollection
+@docs id, attributes, relatedResource, relatedResourceCollection, Resource
 
 -}
 
@@ -19,19 +21,25 @@ import JsonApi.Data exposing (..)
 import List.Extra
 
 
-type alias Resource = JsonApi.Data.Resource
+{-| Data type representing a single JsonApi resource.
+-}
+type alias Resource =
+    JsonApi.Data.Resource
+
+
+{-| Get the string ID of a Resource
+-}
+id : Resource -> String
+id (Resource identifier _ _) =
+    identifier.id
 
 
 {-| Pull the attributes off of a Resource, so that you don't have to do the
     destructuring yourself.
 -}
 attributes : Resource -> Attributes
-attributes resource =
-    let
-        (Resource _ object _) =
-            resource
-    in
-        object.attributes
+attributes (Resource _ object _) =
+    object.attributes
 
 
 {-| Find a related resource.

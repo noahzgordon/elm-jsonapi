@@ -1,14 +1,11 @@
 module Test.JsonApi.Decode exposing (suite)
 
 import ElmTest as Test
-import Dict
-import Debug
-import Json.Encode
 import Json.Decode exposing (decodeString)
 import JsonApi.Decode
-import JsonApi.Data exposing (Document, emptyLinks)
-import JsonApi.OneOrMany exposing (..)
-import Test.Examples exposing (..)
+import JsonApi.Data exposing (emptyLinks)
+import JsonApi.Documents exposing (Document)
+import Test.Examples exposing (validPayload, invalidPayload)
 
 
 suite : Test.Test

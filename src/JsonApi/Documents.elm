@@ -3,12 +3,13 @@ module JsonApi.Documents
         ( primaryResource
         , primaryResourceCollection
         , jsonapi
+        , Document
         )
 
 {-| Helper functions for working with a full JsonApi Document
 
 # Common Helpers
-@docs primaryResource, primaryResourceCollection, jsonapi
+@docs primaryResource, primaryResourceCollection, jsonapi, Document
 
 -}
 
@@ -16,6 +17,11 @@ import Dict
 import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import List.Extra
+
+
+{-| Data type representing the entire JsonApi document.
+-}
+type alias Document = JsonApi.Data.Document
 
 
 {-| Retrieve the primary resource from a decoded Document.
