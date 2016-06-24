@@ -4,13 +4,18 @@ module JsonApi.Resources
         , attributes
         , relatedResource
         , relatedResourceCollection
+        , links
         , Resource
+        , Links
         )
 
 {-| Helper functions for working with a single JsonApi Resource
 
 # Common Helpers
-@docs id, attributes, relatedResource, relatedResourceCollection, Resource
+@docs id, attributes, links, relatedResource, relatedResourceCollection
+
+# Data Types
+@docs Resource, Links
 
 -}
 
@@ -25,6 +30,29 @@ import List.Extra
 -}
 type alias Resource =
     JsonApi.Data.Resource
+
+
+{-| Data type representing a JsonApi links object.
+    See: jsonapi.org/format/#document-links
+-}
+type alias Links =
+    JsonApi.Data.Links
+
+
+{-| Find a related resource.
+    Will return an Err if a resource collection is found.
+-}
+relatedResource : String -> Resource -> Result String Resource
+relatedResource relationshipName resource =
+    (related relationshipName resource) `Result.andThen` extractOne
+
+
+{-| Find a related collection of resources.
+    Will return an Err if a single resource is found.
+-}
+relatedResourceCollection : String -> Resource -> Result String (List Resource)
+relatedResourceCollection relationshipName resource =
+    (related relationshipName resource) `Result.andThen` extractMany
 
 
 {-| Get the string ID of a Resource
@@ -42,20 +70,11 @@ attributes (Resource _ object _) =
     object.attributes
 
 
-{-| Find a related resource.
-    Will return an Err if a resource collection is found.
+{-| Pull the attributes off of a Resource.
 -}
-relatedResource : String -> Resource -> Result String Resource
-relatedResource relationshipName resource =
-    (related relationshipName resource) `Result.andThen` extractOne
-
-
-{-| Find a related collection of resources.
-    Will return an Err if a single resource is found.
--}
-relatedResourceCollection : String -> Resource -> Result String (List Resource)
-relatedResourceCollection relationshipName resource =
-    (related relationshipName resource) `Result.andThen` extractMany
+links : Resource -> Links
+links (Resource _ object _) =
+    object.links
 
 
 

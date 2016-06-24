@@ -3,13 +3,18 @@ module JsonApi.Documents
         ( primaryResource
         , primaryResourceCollection
         , jsonapi
+        , links
         , Document
+        , Links
         )
 
 {-| Helper functions for working with a full JsonApi Document
 
 # Common Helpers
-@docs primaryResource, primaryResourceCollection, jsonapi, Document
+@docs links, jsonapi, primaryResource, primaryResourceCollection
+
+# Data Types
+@docs Document, Links
 
 -}
 
@@ -23,6 +28,13 @@ import List.Extra
 -}
 type alias Document =
     JsonApi.Data.Document
+
+
+{-| Data type representing a JsonApi links object.
+    See: jsonapi.org/format/#document-links
+-}
+type alias Links =
+    JsonApi.Data.Links
 
 
 {-| Retrieve the primary resource from a decoded Document.
@@ -41,11 +53,21 @@ primaryResourceCollection (Document doc) =
     Result.map (List.map (hydratePrimaryResource doc.included)) (extractMany doc.data)
 
 
+{-| Fetch the top-level links object from the document.
+-}
+links : Document -> Links
+links (Document doc) =
+    doc.links
+
+
 {-| Fetch information from the top-level 'jsonapi' object
 -}
 jsonapi : Document -> Maybe JsonApiObject
 jsonapi (Document doc) =
     doc.jsonapi
+
+
+{- Unexposed functions -}
 
 
 hydratePrimaryResource : List RawResource -> RawResource -> Resource
