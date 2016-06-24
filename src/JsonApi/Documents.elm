@@ -21,7 +21,8 @@ import List.Extra
 
 {-| Data type representing the entire JsonApi document.
 -}
-type alias Document = JsonApi.Data.Document
+type alias Document =
+    JsonApi.Data.Document
 
 
 {-| Retrieve the primary resource from a decoded Document.
