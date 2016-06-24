@@ -1,23 +1,21 @@
-module JsonApi
+module JsonApi.Resources
     exposing
         ( attributes
-        , primaryResource
-        , primaryResourceCollection
         , relatedResource
         , relatedResourceCollection
-        , jsonapi
         )
 
-{-| Helper functions for dealing with Json Api payloads
+{-| Helper functions for working with a single JsonApi Resource
 
 # Common Helpers
-@docs attributes, primaryResource, primaryResourceCollection, relatedResource, relatedResourceCollection, jsonapi
+@docs attributes, relatedResource, relatedResourceCollection
 
 -}
 
 import Dict
 import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
+import JsonApi.Data exposing (..)
 import List.Extra
 
 
@@ -31,22 +29,6 @@ attributes resource =
             resource
     in
         object.attributes
-
-
-{-| Retrieve the primary resource from a decoded Document.
-    This function assumes a singular primary resource.
--}
-primaryResource : Document -> Result String Resource
-primaryResource doc =
-    Result.map (hydratePrimaryResource doc.included) (extractOne doc.data)
-
-
-{-| Retrieve the primary resource from a decoded Document.
-    This function assumes a singular primary resource.
--}
-primaryResourceCollection : Document -> Result String (List Resource)
-primaryResourceCollection doc =
-    Result.map (List.map (hydratePrimaryResource doc.included)) (extractMany doc.data)
 
 
 {-| Find a related resource.
@@ -65,11 +47,8 @@ relatedResourceCollection relationshipName resource =
     (related relationshipName resource) `Result.andThen` extractMany
 
 
-{-| Fetch information from the top-level 'jsonapi' object
--}
-jsonapi : Document -> Maybe JsonApiObject
-jsonapi doc =
-    doc.jsonapi
+
+{- Unexposed functions and types -}
 
 
 related : String -> Resource -> Result String (OneOrMany Resource)
@@ -107,15 +86,6 @@ getRelatedCollection relatedResources identifiers =
         List.filter compare relatedResources
             |> List.map (hydrateResource relatedResources)
             |> Ok
-
-
-hydratePrimaryResource : List RawResource -> RawResource -> Resource
-hydratePrimaryResource relatedResources resource =
-    let
-        (RawResource id obj) =
-            resource
-    in
-        Resource id obj (resource :: relatedResources)
 
 
 hydrateResource : List RawResource -> RawResource -> Resource

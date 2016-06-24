@@ -1,4 +1,4 @@
-module Test.JsonApi exposing (suite)
+module Test.JsonApi.Documents exposing (suite)
 
 import ElmTest as Test
 import Dict
@@ -6,8 +6,9 @@ import Debug
 import List.Extra
 import Json.Encode
 import Json.Decode exposing (decodeString)
-import JsonApi
+import JsonApi.Documents
 import JsonApi.Decode
+import JsonApi.Resources
 import JsonApi.Data exposing (Document, Resource(..), emptyLinks)
 import JsonApi.OneOrMany exposing (OneOrMany(..))
 import Test.Examples exposing (validPayload, recursivePayload)
@@ -27,7 +28,7 @@ primaryResourceErrors : Test.Test
 primaryResourceErrors =
     Test.test "it returns an error when used incorrectly"
         (Test.assertEqual (Err "Expected a singleton resource, got a collection")
-            (JsonApi.primaryResource exampleDocument)
+            (JsonApi.Documents.primaryResource exampleDocument)
         )
 
 
@@ -35,7 +36,7 @@ resourceChaining : Test.Test
 resourceChaining =
     let
         decodedPrimaryResource =
-            case JsonApi.primaryResourceCollection exampleDocument of
+            case JsonApi.Documents.primaryResourceCollection exampleDocument of
                 Err string ->
                     Debug.crash string
 
@@ -48,10 +49,10 @@ resourceChaining =
                             resource
 
         decodedPrimaryResourceAttrs =
-            JsonApi.attributes decodedPrimaryResource
+            JsonApi.Resources.attributes decodedPrimaryResource
 
         relatedCommentResource =
-            case JsonApi.relatedResourceCollection "comments" decodedPrimaryResource of
+            case JsonApi.Resources.relatedResourceCollection "comments" decodedPrimaryResource of
                 Err string ->
                     Debug.crash string
 
@@ -64,10 +65,10 @@ resourceChaining =
                             resource
 
         relatedCommentResourceAttrs =
-            JsonApi.attributes relatedCommentResource
+            JsonApi.Resources.attributes relatedCommentResource
 
         relatedCommentAuthorResource =
-            case JsonApi.relatedResource "author" relatedCommentResource of
+            case JsonApi.Resources.relatedResource "author" relatedCommentResource of
                 Err string ->
                     Debug.crash string
 
@@ -75,7 +76,7 @@ resourceChaining =
                     resource
 
         relatedCommentAuthorResourceAttrs =
-            JsonApi.attributes relatedCommentAuthorResource
+            JsonApi.Resources.attributes relatedCommentAuthorResource
 
         primaryAttributesAreDecoded =
             Test.assertEqual (Dict.get "title" decodedPrimaryResourceAttrs)
@@ -101,14 +102,14 @@ resourceCircularReferences =
     let
         primaryResourceResult =
             decodeString JsonApi.Decode.document recursivePayload
-                `Result.andThen` JsonApi.primaryResource
-                `Result.andThen` (JsonApi.relatedResource "author")
-                `Result.andThen` (JsonApi.relatedResource "article")
+                `Result.andThen` JsonApi.Documents.primaryResource
+                `Result.andThen` (JsonApi.Resources.relatedResource "author")
+                `Result.andThen` (JsonApi.Resources.relatedResource "article")
 
         primaryResourceTitle =
             case primaryResourceResult of
                 Ok resource ->
-                    Dict.get "title" (JsonApi.attributes resource)
+                    Dict.get "title" (JsonApi.Resources.attributes resource)
 
                 Err string ->
                     Debug.crash string
@@ -129,7 +130,7 @@ jsonapiObject =
                 }
     in
         Test.test "it can extract jsonapi object information"
-            (Test.assertEqual expectedResult (JsonApi.jsonapi exampleDocument))
+            (Test.assertEqual expectedResult (JsonApi.Documents.jsonapi exampleDocument))
 
 
 exampleDocument : Document
