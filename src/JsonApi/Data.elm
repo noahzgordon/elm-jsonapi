@@ -34,6 +34,7 @@ type alias ResourceObject =
     { attributes : Attributes
     , relationships : Relationships
     , links : Links
+    , meta : Meta
     }
 
 

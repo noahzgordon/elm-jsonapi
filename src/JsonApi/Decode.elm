@@ -62,6 +62,7 @@ resourceObject =
         |> optional "attributes" attributes Dict.empty
         |> optional "relationships" relationships Dict.empty
         |> optional "links" links emptyLinks
+        |> optional "meta" meta Nothing
 
 
 links : Decoder Links

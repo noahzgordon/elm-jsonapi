@@ -5,17 +5,19 @@ module JsonApi.Resources
         , relatedResource
         , relatedResourceCollection
         , links
+        , meta
         , Resource
         , Links
+        , Meta
         )
 
 {-| Helper functions for working with a single JsonApi Resource
 
 # Common Helpers
-@docs id, attributes, links, relatedResource, relatedResourceCollection
+@docs id, attributes, links, relatedResource, relatedResourceCollection, meta
 
 # Data Types
-@docs Resource, Links
+@docs Resource, Links, Meta
 
 -}
 
@@ -37,6 +39,13 @@ type alias Resource =
 -}
 type alias Links =
     JsonApi.Data.Links
+
+
+{-| Data type representing a JsonApi meta object. Alias for Json.Encode.Value.
+    See: jsonapi.org/format/#document-meta
+-}
+type alias Meta =
+    JsonApi.Data.Meta
 
 
 {-| Find a related resource.
@@ -76,6 +85,12 @@ links : Resource -> Links
 links (Resource _ object _) =
     object.links
 
+
+{-| Pull the meta value off of a Resource.
+-}
+meta : Resource -> Meta
+meta (Resource _ object _) =
+    object.meta
 
 
 {- Unexposed functions and types -}

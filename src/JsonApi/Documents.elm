@@ -6,15 +6,16 @@ module JsonApi.Documents
         , links
         , Document
         , Links
+        , Meta
         )
 
 {-| Helper functions for working with a full JsonApi Document
 
 # Common Helpers
-@docs links, jsonapi, primaryResource, primaryResourceCollection
+@docs links, jsonapi, primaryResource, primaryResourceCollection, meta
 
 # Data Types
-@docs Document, Links
+@docs Document, Links, Meta
 
 -}
 
@@ -35,6 +36,13 @@ type alias Document =
 -}
 type alias Links =
     JsonApi.Data.Links
+
+
+{-| Data type representing a JsonApi meta object. Alias for Json.Encode.Value.
+    See: jsonapi.org/format/#document-meta
+-}
+type alias Meta =
+    JsonApi.Data.Meta
 
 
 {-| Retrieve the primary resource from a decoded Document.
@@ -58,6 +66,13 @@ primaryResourceCollection (Document doc) =
 links : Document -> Links
 links (Document doc) =
     doc.links
+
+
+{-| Fetch the top-level meta object from the document.
+-}
+meta : Document -> Meta
+meta (Document doc) =
+    doc.meta
 
 
 {-| Fetch information from the top-level 'jsonapi' object
