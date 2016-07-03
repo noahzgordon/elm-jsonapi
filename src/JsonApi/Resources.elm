@@ -6,6 +6,8 @@ module JsonApi.Resources
         , relatedResourceCollection
         , links
         , meta
+        , relatedLinks
+        , relatedMeta
         , Resource
         , Links
         , Meta
@@ -14,7 +16,7 @@ module JsonApi.Resources
 {-| Helper functions for working with a single JsonApi Resource
 
 # Common Helpers
-@docs id, attributes, links, relatedResource, relatedResourceCollection, meta
+@docs id, attributes, links, relatedResource, relatedResourceCollection, meta, relatedLinks, relatedMeta
 
 # Data Types
 @docs Resource, Links, Meta
@@ -64,6 +66,24 @@ relatedResourceCollection relationshipName resource =
     (related relationshipName resource) `Result.andThen` extractMany
 
 
+{-| Retreive the links from a relationship.
+    Will return an Err if the relationship does not exist.
+-}
+relatedLinks : String -> Resource -> Result String Links
+relatedLinks relationshipName resource=
+    getRelationship relationshipName resource
+      |> Result.map .links
+
+
+{-| Retreive the meta information from a relationship.
+    Will return an Err if the relationship does not exist.
+-}
+relatedMeta : String -> Resource -> Result String Meta
+relatedMeta relationshipName resource=
+    getRelationship relationshipName resource
+      |> Result.map .meta
+
+
 {-| Get the string ID of a Resource
 -}
 id : Resource -> String
@@ -93,22 +113,30 @@ meta (Resource _ object _) =
     object.meta
 
 
+
 {- Unexposed functions and types -}
 
 
 related : String -> Resource -> Result String (OneOrMany Resource)
-related relationshipName (Resource identifier resourceObject relatedResources) =
-    case Dict.get relationshipName (resourceObject.relationships) of
-        Nothing ->
-            Err ("Could not find a relationship with the name '" ++ relationshipName ++ "'")
+related relationshipName resource =
+    getRelationship relationshipName resource
+        `Result.andThen` (extractRelationshipData resource)
 
-        Just relationship ->
-            case relationship.data of
-                One relIdentifier ->
-                    Result.map One (getRelatedResource relatedResources relIdentifier)
 
-                Many relIdentifiers ->
-                    Result.map Many (getRelatedCollection relatedResources relIdentifiers)
+getRelationship : String -> Resource -> Result String Relationship
+getRelationship name (Resource _ object _) =
+    Dict.get name object.relationships
+        |> Result.fromMaybe ("Could not find a relationship with the name '" ++ name ++ "'")
+
+
+extractRelationshipData : Resource -> Relationship -> Result String (OneOrMany Resource)
+extractRelationshipData (Resource relIdentifier _ relatedResources) relationship =
+    case relationship.data of
+        One relIdentifier ->
+            Result.map One (getRelatedResource relatedResources relIdentifier)
+
+        Many relIdentifiers ->
+            Result.map Many (getRelatedCollection relatedResources relIdentifiers)
 
 
 getRelatedResource : List RawResource -> ResourceIdentifier -> Result String Resource
