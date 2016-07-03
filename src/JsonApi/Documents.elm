@@ -4,6 +4,7 @@ module JsonApi.Documents
         , primaryResourceCollection
         , jsonapi
         , links
+        , meta
         , Document
         , Links
         , Meta
