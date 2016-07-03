@@ -6,10 +6,11 @@ import Debug
 import List.Extra
 import Json.Encode
 import Json.Decode exposing (decodeString)
-import JsonApi.Documents exposing (Document)
-import JsonApi.Resources exposing (Resource)
 import JsonApi.Decode
 import JsonApi.Data exposing (emptyLinks)
+import JsonApi exposing (Document, Resource)
+import JsonApi.Documents
+import JsonApi.Resources
 import Test.Examples exposing (validPayload, recursivePayload)
 
 

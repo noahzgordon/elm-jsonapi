@@ -5,9 +5,6 @@ module JsonApi.Documents
         , jsonapi
         , links
         , meta
-        , Document
-        , Links
-        , Meta
         )
 
 {-| Helper functions for working with a full JsonApi Document
@@ -15,35 +12,12 @@ module JsonApi.Documents
 # Common Helpers
 @docs links, jsonapi, primaryResource, primaryResourceCollection, meta
 
-# Data Types
-@docs Document, Links, Meta
-
 -}
 
 import Dict
 import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import List.Extra
-
-
-{-| Data type representing the entire JsonApi document.
--}
-type alias Document =
-    JsonApi.Data.Document
-
-
-{-| Data type representing a JsonApi links object.
-    See: jsonapi.org/format/#document-links
--}
-type alias Links =
-    JsonApi.Data.Links
-
-
-{-| Data type representing a JsonApi meta object. Alias for Json.Encode.Value.
-    See: jsonapi.org/format/#document-meta
--}
-type alias Meta =
-    JsonApi.Data.Meta
 
 
 {-| Retrieve the primary resource from a decoded Document.
@@ -81,6 +55,7 @@ meta (Document doc) =
 jsonapi : Document -> Maybe JsonApiObject
 jsonapi (Document doc) =
     doc.jsonapi
+
 
 
 {- Unexposed functions -}

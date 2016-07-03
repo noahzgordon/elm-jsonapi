@@ -4,7 +4,7 @@ import ElmTest as Test
 import Json.Decode exposing (decodeString)
 import JsonApi.Decode
 import JsonApi.Data exposing (emptyLinks)
-import JsonApi.Documents exposing (Document)
+import JsonApi exposing (Document)
 import Test.Examples exposing (validPayload, invalidPayload)
 
 

@@ -8,18 +8,12 @@ module JsonApi.Resources
         , meta
         , relatedLinks
         , relatedMeta
-        , Resource
-        , Links
-        , Meta
         )
 
 {-| Helper functions for working with a single JsonApi Resource
 
 # Common Helpers
 @docs id, attributes, links, relatedResource, relatedResourceCollection, meta, relatedLinks, relatedMeta
-
-# Data Types
-@docs Resource, Links, Meta
 
 -}
 
@@ -28,26 +22,6 @@ import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
 import List.Extra
-
-
-{-| Data type representing a single JsonApi resource.
--}
-type alias Resource =
-    JsonApi.Data.Resource
-
-
-{-| Data type representing a JsonApi links object.
-    See: jsonapi.org/format/#document-links
--}
-type alias Links =
-    JsonApi.Data.Links
-
-
-{-| Data type representing a JsonApi meta object. Alias for Json.Encode.Value.
-    See: jsonapi.org/format/#document-meta
--}
-type alias Meta =
-    JsonApi.Data.Meta
 
 
 {-| Find a related resource.
@@ -70,18 +44,18 @@ relatedResourceCollection relationshipName resource =
     Will return an Err if the relationship does not exist.
 -}
 relatedLinks : String -> Resource -> Result String Links
-relatedLinks relationshipName resource=
+relatedLinks relationshipName resource =
     getRelationship relationshipName resource
-      |> Result.map .links
+        |> Result.map .links
 
 
 {-| Retreive the meta information from a relationship.
     Will return an Err if the relationship does not exist.
 -}
 relatedMeta : String -> Resource -> Result String Meta
-relatedMeta relationshipName resource=
+relatedMeta relationshipName resource =
     getRelationship relationshipName resource
-      |> Result.map .meta
+        |> Result.map .meta
 
 
 {-| Get the string ID of a Resource
