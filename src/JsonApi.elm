@@ -4,12 +4,13 @@ module JsonApi
         , Resource
         , Links
         , Meta
+        , ErrorObject
         )
 
 {-| A library for processing and working with JSON API payloads.
 
 # Generic Data Types
-@docs Document, Resource, Links, Meta
+@docs Document, Resource, Links, Meta, ErrorObject
 
 -}
 
@@ -40,3 +41,22 @@ type alias Links =
 -}
 type alias Meta =
     JsonApi.Data.Meta
+
+
+{-| Data type describing the types of problems that can be encountered when processing a JSON API payload.
+
++ BadFormat: The JSON API payload received from the server is formatted incorrectly.
++ ServerProblem: A problem was encountered on the server and reported in the document's top-level 'errors' list.
+
+-}
+type alias ErrorObject =
+    { id : Maybe String
+    , links : Maybe JsonApi.Data.ErrorLinks
+    , status : Maybe String
+    , code : Maybe String
+    , title : Maybe String
+    , detail : Maybe String
+    , source : Maybe JsonApi.Data.Source
+    , meta : Meta
+    }
+

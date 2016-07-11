@@ -1,14 +1,15 @@
-module JsonApi.Decode exposing (document)
+module JsonApi.Decode exposing (document, errors)
 
 {-| Library for decoding JSONAPI-compliant payloads
 
-@docs document
+@docs document, errors
 -}
 
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 import Result exposing (Result)
 import Dict
+import JsonApi exposing (ErrorObject)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
 
@@ -28,6 +29,39 @@ documentObject =
         |> optional "links" links emptyLinks
         |> optional "jsonapi" jsonApiObject Nothing
         |> optional "meta" meta Nothing
+
+
+{-| Decode the errors returned from a JSON API-compliant server.
+-}
+errors : Decoder (List ErrorObject)
+errors =
+    "errors" := (list errorObject)
+
+
+errorObject : Decoder ErrorObject
+errorObject =
+    decode ErrorObject
+        |> optional "id" (maybe string) Nothing
+        |> optional "links" (maybe errorLinks) Nothing
+        |> optional "status" (maybe string) Nothing
+        |> optional "code" (maybe string) Nothing
+        |> optional "title" (maybe string) Nothing
+        |> optional "detail" (maybe string) Nothing
+        |> optional "source" (maybe source) Nothing
+        |> optional "meta" meta Nothing
+
+
+source : Decoder Source
+source =
+    decode Source
+        |> optional "pointer" (maybe string) Nothing
+        |> optional "parameter" (maybe string) Nothing
+
+
+errorLinks : Decoder ErrorLinks
+errorLinks =
+    decode ErrorLinks
+        |> optional "about" (maybe string) Nothing
 
 
 meta : Decoder Meta

@@ -86,3 +86,13 @@ type alias Meta =
 
 type alias Link =
     Maybe String
+
+
+type alias ErrorLinks =
+    { about : Maybe String }
+
+
+type alias Source =
+    { pointer : Maybe String
+    , parameter : Maybe String
+    }

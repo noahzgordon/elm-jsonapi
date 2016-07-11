@@ -133,3 +133,26 @@ recursivePayload =
       }]
     }
   """
+
+
+payloadWithErrors : String
+payloadWithErrors =
+    """
+    {
+      "errors": [
+        {
+          "id": "123",
+          "links": {
+            "about": "something/happened"
+          },
+          "status": "500",
+          "code": "12345",
+          "title": "Something Happened",
+          "detail": "I'm not really sure what happened",
+          "source": {
+            "pointer": "/foo/0"
+          }
+        }
+      ]
+    }
+  """
