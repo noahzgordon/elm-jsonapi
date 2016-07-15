@@ -1,6 +1,6 @@
 {
-    "version": "0.0.1",
-    "summary": "decoders and helper functions for working with JSONAPI payloads",
+    "version": "1.0.0",
+    "summary": "Decoders and helper functions for working with JSONAPI payloads",
     "repository": "https://github.com/noahzgordon/elm-jsonapi.git",
     "license": "BSD3",
     "source-directories": [
