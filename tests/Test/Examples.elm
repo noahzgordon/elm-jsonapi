@@ -156,3 +156,15 @@ payloadWithErrors =
       ]
     }
   """
+
+payloadWithResourceIdentifiers : String
+payloadWithResourceIdentifiers =
+    """
+    {
+      "data": {
+        "type": "articles",
+        "id": "2",
+        "meta": "this is the second article"
+      }
+    }
+  """
