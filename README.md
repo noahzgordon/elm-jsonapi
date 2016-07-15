@@ -2,6 +2,8 @@
 
 elm-jsonapi decodes any JSON API compliant payload and provides helper functions for working with the results.
 
+This library only provides base functionality for decoding payloads and working with the results. A more sophisticated wrapper which includes server negotiation is coming soon!
+
 ```
 import Http
 import JsonApi exposing (primaryResource)
