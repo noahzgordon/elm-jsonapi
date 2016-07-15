@@ -23,6 +23,10 @@ extractUsername doc =
     `Maybe.andThen` (Dict.get "username")
 ```
 
+## Known Issues
++ Links objects are unsupported. Links will only be captured if delivered as string values.
++ There is no dedicated type for Resource Identifiers. If your document's primary data is composed of Resource Identifiers, they will be represented as Resources without attributes or relationships.
+
 ## contributing
 
 elm-jsonapi is currently under development. I use waffle.io and Github Issues to track new features and bugs. if there's a feature you'd like to see, please
