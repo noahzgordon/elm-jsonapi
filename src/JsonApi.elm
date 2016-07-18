@@ -45,9 +45,6 @@ type alias Meta =
 
 {-| Data type describing the types of problems that can be encountered when processing a JSON API payload.
 
-+ BadFormat: The JSON API payload received from the server is formatted incorrectly.
-+ ServerProblem: A problem was encountered on the server and reported in the document's top-level 'errors' list.
-
 -}
 type alias ErrorObject =
     { id : Maybe String
