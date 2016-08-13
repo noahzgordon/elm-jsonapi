@@ -93,7 +93,7 @@ resource =
 resourceObject : Decoder ResourceObject
 resourceObject =
     decode ResourceObject
-        |> optional "attributes" attributes Dict.empty
+        |> optional "attributes" attributes Nothing
         |> optional "relationships" relationships Dict.empty
         |> optional "links" links emptyLinks
         |> optional "meta" meta Nothing
@@ -117,7 +117,7 @@ link =
 
 attributes : Decoder Attributes
 attributes =
-    dict value
+    maybe value
 
 
 relationships : Decoder Relationships

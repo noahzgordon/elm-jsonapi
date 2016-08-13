@@ -77,7 +77,7 @@ emptyLinks =
 
 
 type alias Attributes =
-    Dict String Json.Decode.Value
+    Maybe Json.Decode.Value
 
 
 type alias Meta =

@@ -5,7 +5,7 @@ import Dict
 import Debug
 import List.Extra
 import Json.Encode
-import Json.Decode exposing (decodeString)
+import Json.Decode exposing (decodeString, decodeValue, (:=))
 import JsonApi.Decode
 import JsonApi.Data exposing (emptyLinks)
 import JsonApi exposing (Document, Resource)
@@ -48,8 +48,10 @@ resourceChaining =
                         Just resource ->
                             resource
 
-        decodedPrimaryResourceAttrs =
-            JsonApi.Resources.attributes decodedPrimaryResource
+        decodedPrimaryResourceAttribute =
+            JsonApi.Resources.attributes ("title" := Json.Decode.string) decodedPrimaryResource
+                |> Result.toMaybe
+                |> Maybe.withDefault ""
 
         relatedCommentResource =
             case JsonApi.Resources.relatedResourceCollection "comments" decodedPrimaryResource of
@@ -64,8 +66,10 @@ resourceChaining =
                         Just resource ->
                             resource
 
-        relatedCommentResourceAttrs =
-            JsonApi.Resources.attributes relatedCommentResource
+        relatedCommentResourceAttribute =
+            JsonApi.Resources.attributes ("body" := Json.Decode.string) relatedCommentResource
+                |> Result.toMaybe
+                |> Maybe.withDefault ""
 
         relatedCommentAuthorResource =
             case JsonApi.Resources.relatedResource "author" relatedCommentResource of
@@ -75,20 +79,19 @@ resourceChaining =
                 Ok resource ->
                     resource
 
-        relatedCommentAuthorResourceAttrs =
-            JsonApi.Resources.attributes relatedCommentAuthorResource
+        relatedCommentAuthorResourceAttribute =
+            JsonApi.Resources.attributes ("twitter" := Json.Decode.string) relatedCommentAuthorResource
+                |> Result.toMaybe
+                |> Maybe.withDefault ""
 
         primaryAttributesAreDecoded =
-            Test.assertEqual (Dict.get "title" decodedPrimaryResourceAttrs)
-                (Just (Json.Encode.string "JSON API paints my bikeshed!"))
+            Test.assertEqual decodedPrimaryResourceAttribute "JSON API paints my bikeshed!"
 
         relationshipAttributesAreDecoded =
-            Test.assertEqual (Dict.get "body" relatedCommentResourceAttrs)
-                (Just (Json.Encode.string "I like XML better"))
+            Test.assertEqual relatedCommentResourceAttribute "I like XML better"
 
         relationshipsAreHydratedRecursively =
-            Test.assertEqual (Dict.get "twitter" relatedCommentAuthorResourceAttrs)
-                (Just (Json.Encode.string "dgeb"))
+            Test.assertEqual relatedCommentAuthorResourceAttribute "dgeb"
     in
         Test.suite "decoding and relationships"
             [ Test.test "it extracts the primary data attributes from the document" primaryAttributesAreDecoded
@@ -109,15 +112,15 @@ resourceCircularReferences =
         primaryResourceTitle =
             case primaryResourceResult of
                 Ok resource ->
-                    Dict.get "title" (JsonApi.Resources.attributes resource)
+                    JsonApi.Resources.attributes ("title" := Json.Decode.string) resource
+                        |> Result.toMaybe
+                        |> Maybe.withDefault ""
 
                 Err string ->
                     Debug.crash string
     in
         Test.test "it can handle circular references in the payload"
-            (Test.assertEqual (Just (Json.Encode.string "JSON API paints my bikeshed!"))
-                primaryResourceTitle
-            )
+            (Test.assertEqual "JSON API paints my bikeshed!" primaryResourceTitle)
 
 
 jsonapiObject : Test.Test

@@ -18,6 +18,8 @@ module JsonApi.Resources
 -}
 
 import Dict
+import Json.Encode
+import Json.Decode exposing (Decoder, decodeValue)
 import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
@@ -65,12 +67,16 @@ id (Resource identifier _ _) =
     identifier.id
 
 
-{-| Pull the attributes off of a Resource, so that you don't have to do the
-    destructuring yourself.
+{-| Pull the attributes off of a Resource. Because the attributes are unstructured,
+    you must provide a Json Decoder to convert them into a type that you define.
 -}
-attributes : Resource -> Attributes
-attributes (Resource _ object _) =
-    object.attributes
+attributes : Decoder a -> Resource -> Result String a
+attributes decoder (Resource _ object _) =
+    let
+        attributesValue =
+            Maybe.withDefault (Json.Encode.string "") object.attributes
+    in
+        decodeValue decoder attributesValue
 
 
 {-| Pull the attributes off of a Resource.
