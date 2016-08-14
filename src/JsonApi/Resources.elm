@@ -2,6 +2,7 @@ module JsonApi.Resources
     exposing
         ( id
         , attributes
+        , attribute
         , relatedResource
         , relatedResourceCollection
         , links
@@ -13,13 +14,13 @@ module JsonApi.Resources
 {-| Helper functions for working with a single JsonApi Resource
 
 # Common Helpers
-@docs id, attributes, links, relatedResource, relatedResourceCollection, meta, relatedLinks, relatedMeta
+@docs id, attributes, attribute, links, relatedResource, relatedResourceCollection, meta, relatedLinks, relatedMeta
 
 -}
 
 import Dict
 import Json.Encode
-import Json.Decode exposing (Decoder, decodeValue)
+import Json.Decode exposing (Decoder, decodeValue, (:=))
 import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
@@ -67,16 +68,26 @@ id (Resource identifier _ _) =
     identifier.id
 
 
-{-| Pull the attributes off of a Resource. Because the attributes are unstructured,
+{-| Serialize the attributes of a Resource. Because the attributes are unstructured,
     you must provide a Json Decoder to convert them into a type that you define.
 -}
 attributes : Decoder a -> Resource -> Result String a
 attributes decoder (Resource _ object _) =
-    let
-        attributesValue =
-            Maybe.withDefault (Json.Encode.string "") object.attributes
-    in
-        decodeValue decoder attributesValue
+    case object.attributes of
+        Just attrs ->
+            decodeValue decoder attrs
+
+        Nothing ->
+            Err "No attributes key found for resource"
+
+
+{-| Serialize a single attributes of a Resource. You must provide the string key of the attribute
+    and a Json Decoder to convert the attribute into a type that you define.
+-}
+attribute : String -> Decoder a -> Resource -> Result String a
+attribute key decoder resource =
+    attributes (key := Json.Decode.value) resource
+        `Result.andThen` (decodeValue decoder)
 
 
 {-| Pull the attributes off of a Resource.
