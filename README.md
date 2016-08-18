@@ -6,21 +6,36 @@ This library only provides base functionality for decoding payloads and working 
 
 ```
 import Http
-import JsonApi exposing (primaryResource)
-import JsonApi.Decode exposing (document)
+import Json.Decode exposing ((:=))
+import JsonApi
+import JsonApi.Decode
+import JsonApi.Resources
+import JsonApi.Documents
 import Task exposing (..)
+
+
+type alias User =
+  { username : String
+  , email : String
+  }
+
+
+userDecoder : Json.Decode.Decoder User
+userDecoder =
+  Json.Decode.object2
+    ("username" := Json.Decode.string)
+    ("email" := Json.Decode.string)
 
 
 getUserResource : String -> Task Http.Error (JsonApi.Document)
 getUserResource query =
-    Http.get document ("http://www.jsonapi-compliant-server.com/users/" ++ query)
+    Http.get JsonApi.Decode.document ("http://www.jsonapi-compliant-server.com/users/" ++ query)
 
-extractUsername : JsonApi.Document -> Maybe String
+
+extractUsername : JsonApi.Document -> Result String User
 extractUsername doc =
-  primaryResource doc
-    |> Result.toMaybe
-    |> Maybe.map JsonApi.attributes
-    `Maybe.andThen` (Dict.get "username")
+  JsonApi.Documents.primaryResource doc
+    `Result.andThen` (JsonApi.Resources.attributes userDecoder)
 ```
 
 ## Known Issues
