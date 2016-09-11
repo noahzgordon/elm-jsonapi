@@ -21,15 +21,17 @@ import List.Extra
 
 
 {-| Retrieve the primary resource from a decoded Document.
-    This function assumes a singular primary resource.
+    This function assumes a singular primary resource and will return an Err
+    if the document contains a collection of primary resources.
 -}
 primaryResource : Document -> Result String Resource
 primaryResource (Document doc) =
     Result.map (hydratePrimaryResource doc.included) (extractOne doc.data)
 
 
-{-| Retrieve the primary resource from a decoded Document.
-    This function assumes a singular primary resource.
+{-| Retrieve a collection of primary resources from a decoded Document.
+    This function assumes a collection primary resources and will return an Err
+    if the document contains a singular primary resource.
 -}
 primaryResourceCollection : Document -> Result String (List Resource)
 primaryResourceCollection (Document doc) =
