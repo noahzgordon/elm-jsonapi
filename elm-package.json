@@ -1,5 +1,5 @@
 {
-    "version": "2.0.1",
+    "version": "2.0.2",
     "summary": "Decoders and helper functions for working with JSONAPI payloads",
     "repository": "https://github.com/noahzgordon/elm-jsonapi.git",
     "license": "BSD3",
