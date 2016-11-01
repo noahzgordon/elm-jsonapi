@@ -6,7 +6,7 @@ This library only provides base functionality for decoding payloads and working 
 
 See the documentation at: http://package.elm-lang.org/packages/noahzgordon/elm-jsonapi/latest
 
-```
+```elm
 import Http
 import Json.Decode exposing ((:=))
 import JsonApi
