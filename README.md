@@ -24,7 +24,7 @@ type alias User =
 
 userDecoder : Json.Decode.Decoder User
 userDecoder =
-  Json.Decode.object2
+  Json.Decode.object2 User
     ("username" := Json.Decode.string)
     ("email" := Json.Decode.string)
 
