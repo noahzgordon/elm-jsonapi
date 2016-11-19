@@ -105,9 +105,9 @@ resourceCircularReferences =
     let
         primaryResourceResult =
             decodeString JsonApi.Decode.document recursivePayload
-                `Result.andThen` JsonApi.Documents.primaryResource
-                `Result.andThen` (JsonApi.Resources.relatedResource "author")
-                `Result.andThen` (JsonApi.Resources.relatedResource "article")
+                |> Result.andThen JsonApi.Documents.primaryResource
+                |> Result.andThen (JsonApi.Resources.relatedResource "author")
+                |> Result.andThen (JsonApi.Resources.relatedResource "article")
 
         primaryResourceTitle =
             case primaryResourceResult of

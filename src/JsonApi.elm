@@ -56,4 +56,3 @@ type alias ErrorObject =
     , source : Maybe JsonApi.Data.Source
     , meta : Meta
     }
-

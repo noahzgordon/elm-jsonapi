@@ -32,7 +32,7 @@ import List.Extra
 -}
 relatedResource : String -> Resource -> Result String Resource
 relatedResource relationshipName resource =
-    (related relationshipName resource) `Result.andThen` extractOne
+    (related relationshipName resource) |> Result.andThen extractOne
 
 
 {-| Find a related collection of resources.
@@ -40,7 +40,7 @@ relatedResource relationshipName resource =
 -}
 relatedResourceCollection : String -> Resource -> Result String (List Resource)
 relatedResourceCollection relationshipName resource =
-    (related relationshipName resource) `Result.andThen` extractMany
+    (related relationshipName resource) |> Result.andThen extractMany
 
 
 {-| Retreive the links from a relationship.
@@ -87,7 +87,7 @@ attributes decoder (Resource _ object _) =
 attribute : String -> Decoder a -> Resource -> Result String a
 attribute key decoder resource =
     attributes (key := Json.Decode.value) resource
-        `Result.andThen` (decodeValue decoder)
+        |> Result.andThen (decodeValue decoder)
 
 
 {-| Pull the attributes off of a Resource.
@@ -111,7 +111,7 @@ meta (Resource _ object _) =
 related : String -> Resource -> Result String (OneOrMany Resource)
 related relationshipName resource =
     getRelationship relationshipName resource
-        `Result.andThen` (extractRelationshipData resource)
+        |> Result.andThen (extractRelationshipData resource)
 
 
 getRelationship : String -> Resource -> Result String Relationship

@@ -23,8 +23,8 @@ decodesValidPayload : Test.Test
 decodesValidPayload =
     let
         succeedsWithValidPayload =
-            Test.assert
-                <| case decodeString JsonApi.Decode.document validPayload of
+            Test.assert <|
+                case decodeString JsonApi.Decode.document validPayload of
                     Ok _ ->
                         True
 
@@ -38,8 +38,8 @@ decodesInvalidPayload : Test.Test
 decodesInvalidPayload =
     let
         failsWithInvalidPayload =
-            Test.assert
-                <| case decodeString JsonApi.Decode.document invalidPayload of
+            Test.assert <|
+                case decodeString JsonApi.Decode.document invalidPayload of
                     Ok _ ->
                         False
 

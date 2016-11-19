@@ -1,10 +1,10 @@
 module Main exposing (..)
 
 import ElmTest exposing (..)
-
 import Test.JsonApi.Documents
 import Test.JsonApi.Decode
 import Test.JsonApi.Errors
+
 
 tests : Test
 tests =
