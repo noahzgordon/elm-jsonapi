@@ -1,4 +1,4 @@
-module Test.Examples exposing (..)
+module Tests.Examples exposing (..)
 
 {- example payload copied from JsonApi official website: http://jsonapi.org/ -}
 

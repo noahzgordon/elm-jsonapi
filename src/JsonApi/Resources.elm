@@ -20,7 +20,7 @@ module JsonApi.Resources
 
 import Dict
 import Json.Encode
-import Json.Decode exposing (Decoder, decodeValue, (:=))
+import Json.Decode exposing (Decoder, decodeValue, field)
 import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
@@ -86,7 +86,7 @@ attributes decoder (Resource _ object _) =
 -}
 attribute : String -> Decoder a -> Resource -> Result String a
 attribute key decoder resource =
-    attributes (key := Json.Decode.value) resource
+    attributes (field key Json.Decode.value) resource
         |> Result.andThen (decodeValue decoder)
 
 

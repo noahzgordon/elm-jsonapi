@@ -18,7 +18,7 @@ import JsonApi.Data exposing (..)
 -}
 document : Decoder Document
 document =
-    object1 Document documentObject
+    map Document documentObject
 
 
 documentObject : Decoder DocumentObject
@@ -35,7 +35,7 @@ documentObject =
 -}
 errors : Decoder (List ErrorObject)
 errors =
-    "errors" := (list errorObject)
+    field "errors" (list errorObject)
 
 
 errorObject : Decoder ErrorObject
@@ -87,7 +87,7 @@ data =
 
 resource : Decoder RawResource
 resource =
-    object2 RawResource resourceIdentifier resourceObject
+    map2 RawResource resourceIdentifier resourceObject
 
 
 resourceObject : Decoder ResourceObject

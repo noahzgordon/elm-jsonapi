@@ -1,8 +1,9 @@
-module Test.JsonApi.Errors exposing (suite)
+module Tests.JsonApi.Errors exposing (suite)
 
-import ElmTest as Test
+import Test
+import Expect
 import Debug exposing (crash)
-import Test.Examples exposing (payloadWithErrors)
+import Tests.Examples exposing (payloadWithErrors)
 import Json.Decode exposing (decodeString)
 import JsonApi.Decode exposing (errors)
 import JsonApi
@@ -10,7 +11,7 @@ import JsonApi
 
 suite : Test.Test
 suite =
-    Test.suite "error handling"
+    Test.describe "error handling"
         [ documentErrors
         ]
 
@@ -27,7 +28,7 @@ documentErrors =
                     crash "Expected decode to pass in test 'documentErrors'"
 
         assertion =
-            Test.assertEqual error
+            Expect.equal error
                 (Just
                     { id = Just "123"
                     , links =
@@ -47,4 +48,4 @@ documentErrors =
                     }
                 )
     in
-        Test.test "it decodes error payloads into error objects" assertion
+        Test.test "it decodes error payloads into error objects" <| \() -> assertion
