@@ -1,22 +1,23 @@
-module Test.JsonApi.Documents exposing (suite)
+module Tests.JsonApi.Documents exposing (suite)
 
-import ElmTest as Test
+import Test
+import Expect
 import Dict
 import Debug
 import List.Extra
 import Json.Encode
-import Json.Decode exposing (decodeString, decodeValue, (:=))
+import Json.Decode exposing (decodeString, decodeValue, field)
 import JsonApi.Decode
 import JsonApi.Data exposing (emptyLinks)
 import JsonApi exposing (Document, Resource)
 import JsonApi.Documents
 import JsonApi.Resources
-import Test.Examples exposing (validPayload, recursivePayload)
+import Tests.Examples exposing (validPayload, recursivePayload)
 
 
 suite : Test.Test
 suite =
-    Test.suite "JsonApi core functions"
+    Test.describe "JsonApi core functions"
         [ primaryResourceErrors
         , resourceChaining
         , resourceCircularReferences
@@ -27,9 +28,10 @@ suite =
 primaryResourceErrors : Test.Test
 primaryResourceErrors =
     Test.test "it returns an error when used incorrectly"
-        (Test.assertEqual (Err "Expected a singleton resource, got a collection")
-            (JsonApi.Documents.primaryResource exampleDocument)
-        )
+        <| \() ->
+            (Expect.equal (Err "Expected a singleton resource, got a collection")
+                (JsonApi.Documents.primaryResource exampleDocument)
+            )
 
 
 resourceChaining : Test.Test
@@ -49,7 +51,7 @@ resourceChaining =
                             resource
 
         decodedPrimaryResourceAttribute =
-            JsonApi.Resources.attributes ("title" := Json.Decode.string) decodedPrimaryResource
+            JsonApi.Resources.attributes (field "title" Json.Decode.string) decodedPrimaryResource
                 |> Result.toMaybe
                 |> Maybe.withDefault ""
 
@@ -67,7 +69,7 @@ resourceChaining =
                             resource
 
         relatedCommentResourceAttribute =
-            JsonApi.Resources.attributes ("body" := Json.Decode.string) relatedCommentResource
+            JsonApi.Resources.attributes (field "body" Json.Decode.string) relatedCommentResource
                 |> Result.toMaybe
                 |> Maybe.withDefault ""
 
@@ -80,23 +82,23 @@ resourceChaining =
                     resource
 
         relatedCommentAuthorResourceAttribute =
-            JsonApi.Resources.attributes ("twitter" := Json.Decode.string) relatedCommentAuthorResource
+            JsonApi.Resources.attributes (field "twitter" Json.Decode.string) relatedCommentAuthorResource
                 |> Result.toMaybe
                 |> Maybe.withDefault ""
 
         primaryAttributesAreDecoded =
-            Test.assertEqual decodedPrimaryResourceAttribute "JSON API paints my bikeshed!"
+            Expect.equal decodedPrimaryResourceAttribute "JSON API paints my bikeshed!"
 
         relationshipAttributesAreDecoded =
-            Test.assertEqual relatedCommentResourceAttribute "I like XML better"
+            Expect.equal relatedCommentResourceAttribute "I like XML better"
 
         relationshipsAreHydratedRecursively =
-            Test.assertEqual relatedCommentAuthorResourceAttribute "dgeb"
+            Expect.equal relatedCommentAuthorResourceAttribute "dgeb"
     in
-        Test.suite "decoding and relationships"
-            [ Test.test "it extracts the primary data attributes from the document" primaryAttributesAreDecoded
-            , Test.test "it extracts the relationship attributes" relationshipAttributesAreDecoded
-            , Test.test "recursively hydrates relationships" relationshipsAreHydratedRecursively
+        Test.describe "decoding and relationships"
+            [ Test.test "it extracts the primary data attributes from the document" <| \() -> primaryAttributesAreDecoded
+            , Test.test "it extracts the relationship attributes" <| \() -> relationshipAttributesAreDecoded
+            , Test.test "recursively hydrates relationships" <| \() -> relationshipsAreHydratedRecursively
             ]
 
 
@@ -105,14 +107,14 @@ resourceCircularReferences =
     let
         primaryResourceResult =
             decodeString JsonApi.Decode.document recursivePayload
-                `Result.andThen` JsonApi.Documents.primaryResource
-                `Result.andThen` (JsonApi.Resources.relatedResource "author")
-                `Result.andThen` (JsonApi.Resources.relatedResource "article")
+                |> Result.andThen JsonApi.Documents.primaryResource
+                |> Result.andThen (JsonApi.Resources.relatedResource "author")
+                |> Result.andThen (JsonApi.Resources.relatedResource "article")
 
         primaryResourceTitle =
             case primaryResourceResult of
                 Ok resource ->
-                    JsonApi.Resources.attributes ("title" := Json.Decode.string) resource
+                    JsonApi.Resources.attributes (field "title" Json.Decode.string) resource
                         |> Result.toMaybe
                         |> Maybe.withDefault ""
 
@@ -120,7 +122,7 @@ resourceCircularReferences =
                     Debug.crash string
     in
         Test.test "it can handle circular references in the payload"
-            (Test.assertEqual "JSON API paints my bikeshed!" primaryResourceTitle)
+            <| \()-> (Expect.equal "JSON API paints my bikeshed!" primaryResourceTitle)
 
 
 jsonapiObject : Test.Test
@@ -133,7 +135,7 @@ jsonapiObject =
                 }
     in
         Test.test "it can extract jsonapi object information"
-            (Test.assertEqual expectedResult (JsonApi.Documents.jsonapi exampleDocument))
+            <| \() -> (Expect.equal expectedResult (JsonApi.Documents.jsonapi exampleDocument))
 
 
 exampleDocument : Document
