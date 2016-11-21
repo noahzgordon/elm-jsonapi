@@ -1,6 +1,7 @@
 module Test.JsonApi.Decode exposing (suite)
 
-import ElmTest as Test
+import Test
+import Expect
 import Json.Decode exposing (decodeString)
 import JsonApi.Decode
 import JsonApi.Data exposing (emptyLinks)
@@ -12,7 +13,7 @@ import Test.Examples exposing (validPayload, invalidPayload, payloadWithResource
 
 suite : Test.Test
 suite =
-    Test.suite "JsonApi Decoders"
+    Test.describe "JsonApi Decoders"
         [ decodesValidPayload
         , decodesInvalidPayload
         , decodesPayloadWithResourceIdentifiers
@@ -23,13 +24,13 @@ decodesValidPayload : Test.Test
 decodesValidPayload =
     let
         succeedsWithValidPayload =
-            Test.assert
-                <| case decodeString JsonApi.Decode.document validPayload of
+            \_ ->
+                case decodeString JsonApi.Decode.document validPayload of
                     Ok _ ->
-                        True
+                        Expect.pass
 
                     Err _ ->
-                        False
+                        Expect.fail "Failed to decode a valid payload"
     in
         Test.test "can decode a valid JSON API payload" succeedsWithValidPayload
 
@@ -38,13 +39,13 @@ decodesInvalidPayload : Test.Test
 decodesInvalidPayload =
     let
         failsWithInvalidPayload =
-            Test.assert
-                <| case decodeString JsonApi.Decode.document invalidPayload of
+            \_ ->
+                case decodeString JsonApi.Decode.document invalidPayload of
                     Ok _ ->
-                        False
+                        Expect.fail "Somehow decoded an invalid payload!"
 
                     Err _ ->
-                        True
+                        Expect.pass
     in
         Test.test "fails properly with invalid payload" failsWithInvalidPayload
 
@@ -54,11 +55,11 @@ decodesPayloadWithResourceIdentifiers =
     let
         resourceIdentifierMeta =
             decodeString JsonApi.Decode.document payloadWithResourceIdentifiers
-                |> (flip Result.andThen) JsonApi.Documents.primaryResource
+                |> Result.andThen JsonApi.Documents.primaryResource
                 |> Result.toMaybe
-                |> (flip Maybe.andThen) JsonApi.Resources.meta
+                |> Maybe.andThen JsonApi.Resources.meta
                 |> Result.fromMaybe "Meta not found"
-                |> (flip Result.andThen) (Json.Decode.decodeValue Json.Decode.string)
+                |> Result.andThen (Json.Decode.decodeValue Json.Decode.string)
     in
-        Test.assertEqual resourceIdentifierMeta (Ok "this is the second article")
+        (\_ -> Expect.equal resourceIdentifierMeta (Ok "this is the second article"))
             |> Test.test "it can decode resource identifiers as the primary data"
