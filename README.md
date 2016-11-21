@@ -4,6 +4,8 @@ elm-jsonapi decodes any JSON API compliant payload and provides helper functions
 
 This library only provides base functionality for decoding payloads and working with the results. A more sophisticated wrapper which includes content negotation with servers can be found [here](https://github.com/noahzgordon/elm-jsonapi-http/tree/1.0.2).
 
+JSON API specifies a format with which resources related to the document's primary resource(s) are "side-loaded" under a key called included. This library abstracts the structure of the document and reconstructs the resource graph for you; use the relatedResource and relatedResourceCollection functions to traverse the graph from any given resource to its related resources.
+
 See the documentation at: http://package.elm-lang.org/packages/noahzgordon/elm-jsonapi/latest
 
 ```elm
