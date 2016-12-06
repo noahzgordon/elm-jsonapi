@@ -6,3 +6,5 @@ tests/test.js
 
 example/elm-stuff/*
 example/elm.js
+
+index.html
