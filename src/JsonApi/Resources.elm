@@ -9,17 +9,21 @@ module JsonApi.Resources
         , meta
         , relatedLinks
         , relatedMeta
+        , build
+        , withAttributes
+        , withRelationship
+        , withRelationships
         )
 
 {-| Helper functions for working with a single JsonApi Resource
 
 # Common Helpers
-@docs id, attributes, attribute, links, relatedResource, relatedResourceCollection, meta, relatedLinks, relatedMeta
-
+@docs id, attributes, attribute, links, relatedResource, relatedResourceCollection,
+      meta, relatedLinks, relatedMeta, build, withAttributes, withRelationship, withRelationships
 -}
 
 import Dict
-import Json.Encode
+import Json.Encode as Encode
 import Json.Decode exposing (Decoder, decodeValue, field)
 import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
@@ -104,6 +108,49 @@ links (Resource _ object _) =
 meta : Resource -> Meta
 meta (Resource _ object _) =
     object.meta
+
+
+{-| Construct a ClientResource instance with the supplied type.
+    ClientResources are like Resources but without an 'id' field or related resources.
+    Use them to represent new Resources that you want to POST to a JSON API server.
+-}
+build : String -> ClientResource
+build resourceType =
+    ClientResource resourceType
+        { attributes = Nothing
+        , relationships = Dict.empty
+        , links = emptyLinks
+        , meta = Nothing
+        }
+
+
+{-| Add a list of string-value pairs as attributes to a ClientResource
+-}
+withAttributes : List ( String, Encode.Value ) -> ClientResource -> ClientResource
+withAttributes attrs (ClientResource resourceType obj) =
+    ClientResource resourceType { obj | attributes = Just (Encode.object attrs) }
+
+
+{-| Add a relationship with a single related resource to a ClientResource
+-}
+withRelationship : String -> ResourceIdentifier -> ClientResource -> ClientResource
+withRelationship name identifier (ClientResource resourceType obj) =
+    let
+        newRelationships =
+            { data = OneOrMany.One identifier, links = emptyLinks, meta = Nothing }
+    in
+        ClientResource resourceType { obj | relationships = Dict.singleton name newRelationships }
+
+
+{-| Add a relationship with a collection of related resources to a ClientResource
+-}
+withRelationships : String -> List ResourceIdentifier -> ClientResource -> ClientResource
+withRelationships name identifiers (ClientResource resourceType obj) =
+    let
+        newRelationships =
+            { data = OneOrMany.Many identifiers, links = emptyLinks, meta = Nothing }
+    in
+        ClientResource resourceType { obj | relationships = Dict.singleton name newRelationships }
 
 
 

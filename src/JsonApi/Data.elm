@@ -22,6 +22,10 @@ type Resource
     = Resource ResourceIdentifier ResourceObject (List RawResource)
 
 
+type ClientResource
+    = ClientResource String ResourceObject
+
+
 type RawResource
     = RawResource ResourceIdentifier ResourceObject
 
