@@ -8,6 +8,10 @@ JSON API specifies a format with which resources related to the document's prima
 
 See the documentation at: http://package.elm-lang.org/packages/noahzgordon/elm-jsonapi/latest
 
+## Examples
+
+### Decoding a Resource
+
 ```elm
 import Http
 import Json.Decode exposing ((:=))
@@ -40,6 +44,28 @@ extractUsername : JsonApi.Document -> Result String User
 extractUsername doc =
   JsonApi.Documents.primaryResource doc
     `Result.andThen` (JsonApi.Resources.attributes userDecoder)
+```
+
+### Encoding a Client-generated Resource
+```elm
+import JsonApi.Encode as Encode
+import JsonApi.Resources as Resource
+import Json.Encode exposing (Value)
+
+encodeLuke : Result String Value
+encodeLuke =
+  Resources.build "jedi"
+    |> Resources.withAttributes
+        [ ( "first_name", string "Luke" )
+        , ( "last_name", string "Skywalker" )
+        ]
+    |> Resources.withAttributes
+        [ ( "home_planet", string "Tatooine" )
+        ]
+    |> Resources.withRelationship "father" { id = "vader", resourceType = "jedi" }
+    |> Resources.withRelationship "sister" { id = "leia", resourceType = "princess" }
+    |> Resources.withUuid "123e4567-e89b-12d3-a456-426655440000"
+    |> Result.map Encode.clientResource
 ```
 
 ## Known Issues
