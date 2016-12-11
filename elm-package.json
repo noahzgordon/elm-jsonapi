@@ -9,6 +9,7 @@
     "exposed-modules": [
         "JsonApi",
         "JsonApi.Decode",
+        "JsonApi.Encode",
         "JsonApi.Documents",
         "JsonApi.Resources"
     ],
