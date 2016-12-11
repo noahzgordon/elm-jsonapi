@@ -13,6 +13,7 @@
         "JsonApi.Resources"
     ],
     "dependencies": {
+        "Fresheyeball/elm-tuple-extra": "3.0.0 <= v < 4.0.0",
         "NoRedInk/elm-decode-pipeline": "3.0.0 <= v < 4.0.0",
         "elm-community/json-extra": "2.0.0 <= v < 3.0.0",
         "elm-community/list-extra": "4.0.0 <= v < 5.0.0",

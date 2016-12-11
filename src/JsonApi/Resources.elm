@@ -24,7 +24,7 @@ module JsonApi.Resources
 
 import Dict
 import Json.Encode as Encode
-import Json.Decode exposing (Decoder, decodeValue, field)
+import Json.Decode as Decode exposing (Decoder, decodeValue, field)
 import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
@@ -92,7 +92,7 @@ attributes decoder (Resource _ object _) =
 -}
 attribute : String -> Decoder a -> Resource -> Result String a
 attribute key decoder resource =
-    attributes (field key Json.Decode.value) resource
+    attributes (field key Decode.value) resource
         |> Result.andThen (decodeValue decoder)
 
 
@@ -128,7 +128,21 @@ build resourceType =
 -}
 withAttributes : List ( String, Encode.Value ) -> ClientResource -> ClientResource
 withAttributes attrs (ClientResource resourceType obj) =
-    ClientResource resourceType { obj | attributes = Just (Encode.object attrs) }
+    let
+        newAttrs =
+            case obj.attributes of
+                Just oldAttrs ->
+                    oldAttrs
+                        |> decodeValue (Decode.dict Decode.value)
+                        |> Result.map Dict.toList
+                        |> Result.map (List.append attrs)
+                        |> Result.map Encode.object
+                        |> Result.toMaybe
+
+                Nothing ->
+                    Just (Encode.object attrs)
+    in
+        ClientResource resourceType { obj | attributes = newAttrs }
 
 
 {-| Add a relationship with a single related resource to a ClientResource
@@ -139,7 +153,7 @@ withRelationship name identifier (ClientResource resourceType obj) =
         newRelationships =
             { data = OneOrMany.One identifier, links = emptyLinks, meta = Nothing }
     in
-        ClientResource resourceType { obj | relationships = Dict.singleton name newRelationships }
+        ClientResource resourceType { obj | relationships = Dict.insert name newRelationships obj.relationships }
 
 
 {-| Add a relationship with a collection of related resources to a ClientResource
@@ -150,7 +164,7 @@ withRelationships name identifiers (ClientResource resourceType obj) =
         newRelationships =
             { data = OneOrMany.Many identifiers, links = emptyLinks, meta = Nothing }
     in
-        ClientResource resourceType { obj | relationships = Dict.singleton name newRelationships }
+        ClientResource resourceType { obj | relationships = Dict.insert name newRelationships obj.relationships }
 
 
 
