@@ -13,13 +13,14 @@ module JsonApi.Resources
         , withAttributes
         , withRelationship
         , withRelationships
+        , withUuid
         )
 
 {-| Helper functions for working with a single JsonApi Resource
 
 # Common Helpers
 @docs id, attributes, attribute, links, relatedResource, relatedResourceCollection,
-      meta, relatedLinks, relatedMeta, build, withAttributes, withRelationship, withRelationships
+      meta, relatedLinks, relatedMeta, build, withAttributes, withRelationship, withRelationships, withUuid
 -}
 
 import Dict
@@ -29,6 +30,7 @@ import JsonApi.Data exposing (..)
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
 import List.Extra
+import Uuid.Barebones exposing (isValidUuid)
 
 
 {-| Find a related resource.
@@ -117,6 +119,7 @@ meta (Resource _ object _) =
 build : String -> ClientResource
 build resourceType =
     ClientResource resourceType
+        Nothing
         { attributes = Nothing
         , relationships = Dict.empty
         , links = emptyLinks
@@ -124,10 +127,25 @@ build resourceType =
         }
 
 
+{-| Add a client-generated UUID to the resource. MUST be a valid Uuid in the
+    canonical representation xxxxxxxx-xxxx-Axxx-Yxxx-xxxxxxxxxxxx where A is
+    the version number between [1-5] and Y is in the range [8-B].
+
+    I recommend using http://package.elm-lang.org/packages/danyx23/elm-uuid/2.0.2/Uuid
+    to general a valid UUID.
+-}
+withUuid : String -> ClientResource -> Result String ClientResource
+withUuid uuid (ClientResource resourceType id obj) =
+    if isValidUuid uuid then
+        Ok (ClientResource resourceType (Just uuid) obj)
+    else
+        Err "Uuid is not canonically valid"
+
+
 {-| Add a list of string-value pairs as attributes to a ClientResource
 -}
 withAttributes : List ( String, Encode.Value ) -> ClientResource -> ClientResource
-withAttributes attrs (ClientResource resourceType obj) =
+withAttributes attrs (ClientResource resourceType id obj) =
     let
         newAttrs =
             case obj.attributes of
@@ -142,29 +160,29 @@ withAttributes attrs (ClientResource resourceType obj) =
                 Nothing ->
                     Just (Encode.object attrs)
     in
-        ClientResource resourceType { obj | attributes = newAttrs }
+        ClientResource resourceType id { obj | attributes = newAttrs }
 
 
 {-| Add a relationship with a single related resource to a ClientResource
 -}
 withRelationship : String -> ResourceIdentifier -> ClientResource -> ClientResource
-withRelationship name identifier (ClientResource resourceType obj) =
+withRelationship name identifier (ClientResource resourceType id obj) =
     let
         newRelationships =
             { data = OneOrMany.One identifier, links = emptyLinks, meta = Nothing }
     in
-        ClientResource resourceType { obj | relationships = Dict.insert name newRelationships obj.relationships }
+        ClientResource resourceType id { obj | relationships = Dict.insert name newRelationships obj.relationships }
 
 
 {-| Add a relationship with a collection of related resources to a ClientResource
 -}
 withRelationships : String -> List ResourceIdentifier -> ClientResource -> ClientResource
-withRelationships name identifiers (ClientResource resourceType obj) =
+withRelationships name identifiers (ClientResource resourceType id obj) =
     let
         newRelationships =
             { data = OneOrMany.Many identifiers, links = emptyLinks, meta = Nothing }
     in
-        ClientResource resourceType { obj | relationships = Dict.insert name newRelationships obj.relationships }
+        ClientResource resourceType id { obj | relationships = Dict.insert name newRelationships obj.relationships }
 
 
 

@@ -23,7 +23,7 @@ type Resource
 
 
 type ClientResource
-    = ClientResource String ResourceObject
+    = ClientResource String (Maybe String) ResourceObject
 
 
 type RawResource

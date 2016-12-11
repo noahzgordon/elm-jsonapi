@@ -20,23 +20,33 @@ import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..))
     see: http://jsonapi.org/format/#crud-creating
 -}
 clientResource : ClientResource -> Encode.Value
-clientResource (ClientResource id object) =
+clientResource (ClientResource resourceType id object) =
     let
-        attributes =
-            Maybe.withDefault (Encode.object []) object.attributes
+        typeFields =
+            [ ( "type", Encode.string resourceType ) ]
 
-        relationships =
-            Dict.toList object.relationships
-                |> List.map (Tuple2.map relationship)
-                |> Encode.object
+        idFields =
+            id
+                |> Maybe.map (\i -> [ ( "id", Encode.string i ) ])
+                |> Maybe.withDefault []
+
+        attributesFields =
+            [ ( "attributes"
+              , Maybe.withDefault (Encode.object []) object.attributes
+              )
+            ]
+
+        relationshipsFields =
+            [ ( "relationships"
+              , Dict.toList object.relationships
+                    |> List.map (Tuple2.map relationship)
+                    |> Encode.object
+              )
+            ]
     in
         Encode.object
             [ ( "data"
-              , Encode.object
-                    [ ( "type", Encode.string id )
-                    , ( "attributes", attributes )
-                    , ( "relationships", relationships )
-                    ]
+              , Encode.object (typeFields ++ idFields ++ attributesFields ++ relationshipsFields)
               )
             ]
 
