@@ -1,0 +1,14 @@
+cache:
+  directories:
+    - test/elm-stuff/build-artifacts
+
+language: node_js
+
+node_js:
+  - "4.3"
+
+install:
+  - npm install -g elm@0.18 elm-test
+
+script:
+  - elm test
