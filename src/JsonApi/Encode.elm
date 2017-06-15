@@ -1,11 +1,12 @@
 module JsonApi.Encode
     exposing
         ( clientResource
+        , resource
         )
 
 {-| Functions for encoding JSON API resources to Json
 
-@docs clientResource
+@docs clientResource, resource
 
 -}
 
@@ -14,6 +15,19 @@ import JsonApi.Data exposing (..)
 import Dict
 import Tuple2
 import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..))
+
+
+{-| Encode a resource fetched from the server to a JSON API-compliant value
+    see: http://jsonapi.org/format/#crud-updating
+-}
+resource : Resource -> Encode.Value
+resource (Resource identifier object _) =
+    [ ( "id", Encode.string identifier.id )
+    , ( "type", Encode.string identifier.resourceType )
+    ]
+        ++ resourceObjectFields object
+        |> Encode.object
+        |> (\data -> Encode.object [ ( "data", data ) ])
 
 
 {-| Encode a resource constructed on the client to a JSON API-compliant value
@@ -29,26 +43,25 @@ clientResource (ClientResource resourceType id object) =
             id
                 |> Maybe.map (\i -> [ ( "id", Encode.string i ) ])
                 |> Maybe.withDefault []
-
-        attributesFields =
-            [ ( "attributes"
-              , Maybe.withDefault (Encode.object []) object.attributes
-              )
-            ]
-
-        relationshipsFields =
-            [ ( "relationships"
-              , Dict.toList object.relationships
-                    |> List.map (Tuple2.map relationship)
-                    |> Encode.object
-              )
-            ]
     in
         Encode.object
             [ ( "data"
-              , Encode.object (typeFields ++ idFields ++ attributesFields ++ relationshipsFields)
+              , Encode.object (typeFields ++ idFields ++ resourceObjectFields object)
               )
             ]
+
+
+resourceObjectFields : ResourceObject -> List ( String, Encode.Value )
+resourceObjectFields object =
+    [ ( "attributes"
+      , Maybe.withDefault (Encode.object []) object.attributes
+      )
+    , ( "relationships"
+      , Dict.toList object.relationships
+            |> List.map (Tuple2.map relationship)
+            |> Encode.object
+      )
+    ]
 
 
 relationship : Relationship -> Encode.Value

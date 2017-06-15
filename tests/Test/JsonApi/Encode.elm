@@ -3,15 +3,19 @@ module Test.JsonApi.Encode exposing (suite)
 import Test
 import Expect
 import Json.Encode exposing (string)
-import Json.Decode as Decode exposing (decodeValue, at)
+import Json.Decode as Decode exposing (decodeString, decodeValue, at)
 import JsonApi.Encode
+import JsonApi.Decode
+import JsonApi.Documents
 import JsonApi.Resources as Resources
+import Test.Examples exposing (recursivePayload)
 
 
 suite : Test.Test
 suite =
     Test.describe "JsonApi Encoders"
         [ encodesClientResource
+        , encodesResource
         ]
 
 
@@ -53,3 +57,33 @@ encodesClientResource =
                 |> Result.withDefault (Expect.fail "Client resource coud not be encoded")
     in
         Test.test "it encodes a client resource" assertion
+
+
+encodesResource : Test.Test
+encodesResource =
+    let
+        assertFieldEquality fieldList expectedString resource =
+            Expect.equal (decodeValue (at fieldList Decode.string) resource) (Ok expectedString)
+
+        decodedResource =
+            decodeString JsonApi.Decode.document recursivePayload
+                |> Result.andThen JsonApi.Documents.primaryResource
+                |> Result.map JsonApi.Encode.resource
+
+        assertion _ =
+            case decodedResource of
+                Ok resource ->
+                    (Expect.all
+                        [ assertFieldEquality [ "data", "id" ] "1"
+                        , assertFieldEquality [ "data", "type" ] "articles"
+                        , assertFieldEquality [ "data", "attributes", "title" ] "JSON API paints my bikeshed!"
+                        , assertFieldEquality [ "data", "relationships", "author", "data", "type" ] "people"
+                        , assertFieldEquality [ "data", "relationships", "author", "data", "id" ] "9"
+                        ]
+                    )
+                        resource
+
+                Err string ->
+                    Expect.fail string
+    in
+        Test.test "it encodes a resource fetched from the server" assertion
