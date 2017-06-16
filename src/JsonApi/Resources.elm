@@ -14,13 +14,18 @@ module JsonApi.Resources
         , withRelationship
         , withRelationships
         , withUuid
+        , updateAttributes
         )
 
 {-| Helper functions for working with a single JsonApi Resource
 
-# Common Helpers
-@docs id, attributes, attribute, links, relatedResource, relatedResourceCollection,
-      meta, relatedLinks, relatedMeta, build, withAttributes, withRelationship, withRelationships, withUuid
+# Working with Resources
+@docs id, attributes, attribute, links, relatedResource, relatedResourceCollection, meta, relatedLinks, relatedMeta,
+
+# Modifying Resources
+
+# Building Client Resources
+@docs build, withAttributes, withRelationship, withRelationships, withUuid
 -}
 
 import Dict
@@ -130,9 +135,7 @@ build resourceType =
 {-| Add a client-generated UUID to the resource. MUST be a valid Uuid in the
     canonical representation xxxxxxxx-xxxx-Axxx-Yxxx-xxxxxxxxxxxx where A is
     the version number between [1-5] and Y is in the range [8-B].
-
-    I recommend using http://package.elm-lang.org/packages/danyx23/elm-uuid/2.0.2/Uuid
-    to general a valid UUID.
+    I recommend using http://package.elm-lang.org/packages/danyx23/elm-uuid/2.0.2/Uuid to general a valid UUID.
 -}
 withUuid : String -> ClientResource -> Result String ClientResource
 withUuid uuid (ClientResource resourceType id obj) =
@@ -140,6 +143,27 @@ withUuid uuid (ClientResource resourceType id obj) =
         Ok (ClientResource resourceType (Just uuid) obj)
     else
         Err "Uuid is not canonically valid"
+
+
+{-| Update the attributes of a Resource; existing keys will be overwritten.
+-}
+updateAttributes : List ( String, Encode.Value ) -> Resource -> Resource
+updateAttributes attrs (Resource identifier obj related) =
+    let
+        newAttrs =
+            case obj.attributes of
+                Just oldAttrs ->
+                    oldAttrs
+                        |> decodeValue (Decode.dict Decode.value)
+                        |> Result.map (Dict.union (Dict.fromList attrs))
+                        |> Result.map Dict.toList
+                        |> Result.map Encode.object
+                        |> Result.toMaybe
+
+                Nothing ->
+                    Just (Encode.object attrs)
+    in
+        Resource identifier { obj | attributes = newAttrs } related
 
 
 {-| Add a list of string-value pairs as attributes to a ClientResource
@@ -152,8 +176,8 @@ withAttributes attrs (ClientResource resourceType id obj) =
                 Just oldAttrs ->
                     oldAttrs
                         |> decodeValue (Decode.dict Decode.value)
+                        |> Result.map (Dict.union (Dict.fromList attrs))
                         |> Result.map Dict.toList
-                        |> Result.map (List.append attrs)
                         |> Result.map Encode.object
                         |> Result.toMaybe
 

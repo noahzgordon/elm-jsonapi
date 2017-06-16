@@ -5,6 +5,7 @@ import Test.JsonApi.Documents
 import Test.JsonApi.Decode
 import Test.JsonApi.Encode
 import Test.JsonApi.Errors
+import Test.JsonApi.Resources
 
 
 all : Test
@@ -14,4 +15,5 @@ all =
         , Test.JsonApi.Decode.suite
         , Test.JsonApi.Encode.suite
         , Test.JsonApi.Errors.suite
+        , Test.JsonApi.Resources.suite
         ]

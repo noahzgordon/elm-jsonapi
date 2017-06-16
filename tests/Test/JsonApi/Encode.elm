@@ -8,7 +8,7 @@ import JsonApi.Encode
 import JsonApi.Decode
 import JsonApi.Documents
 import JsonApi.Resources as Resources
-import Test.Examples exposing (recursivePayload)
+import Test.Examples exposing (simpleResource)
 
 
 suite : Test.Test
@@ -66,7 +66,7 @@ encodesResource =
             Expect.equal (decodeValue (at fieldList Decode.string) resource) (Ok expectedString)
 
         decodedResource =
-            decodeString JsonApi.Decode.document recursivePayload
+            decodeString JsonApi.Decode.document simpleResource
                 |> Result.andThen JsonApi.Documents.primaryResource
                 |> Result.map JsonApi.Encode.resource
 

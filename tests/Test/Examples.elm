@@ -101,6 +101,26 @@ invalidPayload =
   """
 
 
+simpleResource : String
+simpleResource =
+    """
+    {
+      "data": {
+        "type": "articles",
+        "id": "1",
+        "attributes": {
+          "title": "JSON API paints my bikeshed!"
+        },
+        "relationships": {
+          "author": {
+            "data": { "type": "people", "id": "9" }
+          }
+        }
+      }
+    }
+    """
+
+
 recursivePayload : String
 recursivePayload =
     """
@@ -156,6 +176,7 @@ payloadWithErrors =
       ]
     }
   """
+
 
 payloadWithResourceIdentifiers : String
 payloadWithResourceIdentifiers =
