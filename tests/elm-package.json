@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "Tests for elm-jsonapi",
-    "repository": "http://github.com/noahzgordon/elm-jsonapi.git",
+    "repository": "https://github.com/noahzgordon/elm-jsonapi.git",
     "license": "BSD3",
     "source-directories": [
         ".",
@@ -15,7 +15,7 @@
         "danyx23/elm-uuid": "2.0.2 <= v < 3.0.0",
         "elm-community/elm-test": "3.0.0 <= v < 4.0.0",
         "elm-community/json-extra": "2.0.0 <= v < 3.0.0",
-        "elm-community/list-extra": "5.0.0 <= v < 6.0.0",
+        "elm-community/list-extra": "5.0.0 <= v < 8.0.0",
         "elm-lang/core": "5.0.0 <= v < 6.0.0",
         "rtfeldman/node-test-runner": "3.0.0 <= v < 4.0.0"
     },
