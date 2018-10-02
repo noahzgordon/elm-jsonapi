@@ -8,6 +8,10 @@ JSON API specifies a format with which resources related to the document's prima
 
 See the documentation at: http://package.elm-lang.org/packages/noahzgordon/elm-jsonapi/latest
 
+## Elm Version
+
+This module can be used with elm 0.18.x. It can be tested with elm-test 0.18.2
+
 ## Examples
 
 ### Decoding a Resource
