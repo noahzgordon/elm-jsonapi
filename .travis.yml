@@ -5,7 +5,7 @@ cache:
 language: node_js
 
 node_js:
-  - "4.3"
+  - "8.11.2"
 
 install:
   - npm install -g elm@0.18 elm-test@0.18.2
