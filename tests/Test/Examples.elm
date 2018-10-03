@@ -30,6 +30,13 @@ validPayload =
             },
             "data": { "type": "people", "id": "9" }
           },
+          "category": {
+            "links": {
+              "self": "http://example.com/articles/1/relationships/category",
+              "related": "http://example.com/articles/1/category"
+            },
+            "data": null
+          },
           "comments": {
             "links": {
               "self": "http://example.com/articles/1/relationships/comments",
