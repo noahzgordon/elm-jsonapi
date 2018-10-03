@@ -57,8 +57,9 @@ decodesPayloadWithResourceIdentifiers =
             decodeString JsonApi.Decode.document payloadWithResourceIdentifiers
                 |> Result.andThen JsonApi.Documents.primaryResource
                 |> Result.toMaybe
-                |> Maybe.andThen JsonApi.Resources.meta
+                |> Maybe.andThen (Maybe.map JsonApi.Resources.meta)
                 |> Result.fromMaybe "Meta not found"
+                |> Result.andThen (Result.fromMaybe "Meta is null")
                 |> Result.andThen (Json.Decode.decodeValue Json.Decode.string)
     in
         (\_ -> Expect.equal resourceIdentifierMeta (Ok "this is the second article"))

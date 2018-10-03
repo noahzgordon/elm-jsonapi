@@ -57,7 +57,7 @@ relationship rel =
         data =
             case (OneOrMany.map resourceIdentifier rel.data) of
                 One value ->
-                    value
+                    Maybe.withDefault Encode.null value
 
                 Many values ->
                     Encode.list values

@@ -77,8 +77,13 @@ resourceChaining =
                 Err string ->
                     Debug.crash string
 
-                Ok resource ->
-                    resource
+                Ok maybeResource ->
+                    case maybeResource of
+                        Nothing ->
+                            Debug.crash "Expected to find comment author, but was null"
+
+                        Just resource ->
+                            resource
 
         relatedCommentAuthorResourceAttribute =
             JsonApi.Resources.attributes (field "twitter" Json.Decode.string) relatedCommentAuthorResource
@@ -107,15 +112,21 @@ resourceCircularReferences =
         primaryResourceResult =
             decodeString JsonApi.Decode.document recursivePayload
                 |> Result.andThen JsonApi.Documents.primaryResource
+                |> Result.andThen (Result.fromMaybe "primary resource was null")
                 |> Result.andThen (JsonApi.Resources.relatedResource "author")
+                |> Result.andThen (Result.fromMaybe "author was null")
                 |> Result.andThen (JsonApi.Resources.relatedResource "article")
 
         primaryResourceTitle =
             case primaryResourceResult of
-                Ok resource ->
-                    JsonApi.Resources.attributes (field "title" Json.Decode.string) resource
-                        |> Result.toMaybe
-                        |> Maybe.withDefault ""
+                Ok maybeResource ->
+                    case maybeResource of
+                        Just resource ->
+                            JsonApi.Resources.attributes (field "title" Json.Decode.string) resource
+                                |> Result.toMaybe
+                                |> Maybe.withDefault ""
+                        Nothing ->
+                            Debug.crash "Expected to find an article, but it was null"
 
                 Err string ->
                     Debug.crash string

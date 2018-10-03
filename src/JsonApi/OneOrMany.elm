@@ -2,7 +2,7 @@ module JsonApi.OneOrMany exposing (..)
 
 
 type OneOrMany a
-    = One a
+    = One (Maybe a)
     | Many (List a)
 
 
@@ -10,13 +10,13 @@ map : (a -> b) -> OneOrMany a -> OneOrMany b
 map fn oneOrMany =
     case oneOrMany of
         One x ->
-            One (fn x)
+            One (Maybe.map fn x)
 
         Many xs ->
             Many (List.map fn xs)
 
 
-extractOne : OneOrMany a -> Result String a
+extractOne : OneOrMany a -> Result String (Maybe a)
 extractOne oneOrMany =
     case oneOrMany of
         One x ->

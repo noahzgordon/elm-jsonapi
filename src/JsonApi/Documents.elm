@@ -24,9 +24,9 @@ import List.Extra
     This function assumes a singular primary resource and will return an Err
     if the document contains a collection of primary resources.
 -}
-primaryResource : Document -> Result String Resource
+primaryResource : Document -> Result String (Maybe Resource)
 primaryResource (Document doc) =
-    Result.map (hydratePrimaryResource doc.included) (extractOne doc.data)
+    Result.map (Maybe.map (hydratePrimaryResource doc.included)) (extractOne doc.data)
 
 
 {-| Retrieve a collection of primary resources from a decoded Document.

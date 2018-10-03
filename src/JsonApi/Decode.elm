@@ -81,7 +81,7 @@ data : Decoder (OneOrMany RawResource)
 data =
     oneOf
         [ Json.Decode.map Many (list resource)
-        , Json.Decode.map One resource
+        , Json.Decode.map One (nullable resource)
         ]
 
 
@@ -137,7 +137,7 @@ relationshipData : Decoder (OneOrMany ResourceIdentifier)
 relationshipData =
     oneOf
         [ Json.Decode.map Many (list resourceIdentifier)
-        , Json.Decode.map One resourceIdentifier
+        , Json.Decode.map One (nullable resourceIdentifier)
         ]
 
 

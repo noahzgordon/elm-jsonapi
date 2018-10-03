@@ -36,7 +36,7 @@ import Uuid.Barebones exposing (isValidUuid)
 {-| Find a related resource.
     Will return an Err if a resource collection is found.
 -}
-relatedResource : String -> Resource -> Result String Resource
+relatedResource : String -> Resource -> Result String (Maybe Resource)
 relatedResource relationshipName resource =
     (related relationshipName resource)
         |> Result.andThen extractOne
@@ -169,7 +169,7 @@ withRelationship : String -> ResourceIdentifier -> ClientResource -> ClientResou
 withRelationship name identifier (ClientResource resourceType id obj) =
     let
         newRelationships =
-            { data = OneOrMany.One identifier, links = emptyLinks, meta = Nothing }
+            { data = OneOrMany.One (Just identifier), links = emptyLinks, meta = Nothing }
     in
         ClientResource resourceType id { obj | relationships = Dict.insert name newRelationships obj.relationships }
 
@@ -211,15 +211,26 @@ extractRelationshipData (Resource relIdentifier _ relatedResources) relationship
             Result.map Many (getRelatedCollection relatedResources relIdentifiers)
 
 
-getRelatedResource : List RawResource -> ResourceIdentifier -> Result String Resource
-getRelatedResource relatedResources identifier =
+getRelatedResource : List RawResource -> Maybe ResourceIdentifier -> Result String (Maybe Resource)
+getRelatedResource relatedResources maybeIdentifier =
     let
-        compare (RawResource id _) =
-            id == identifier
+        find : ResourceIdentifier -> Result String Resource
+        find identifier =
+            let
+                compare (RawResource id _) =
+                    id == identifier
+            in
+                List.Extra.find compare relatedResources
+                    |> Maybe.map (hydrateResource relatedResources)
+                    |> Result.fromMaybe ("Could not find related resource with identifier" ++ toString identifier)
+
     in
-        List.Extra.find compare relatedResources
-            |> Maybe.map (hydrateResource relatedResources)
-            |> Result.fromMaybe ("Could not find related resource with identifier" ++ toString identifier)
+        case maybeIdentifier of
+            Nothing ->
+                Ok Nothing
+
+            Just identifier ->
+                Result.map Just (find identifier)
 
 
 getRelatedCollection : List RawResource -> List ResourceIdentifier -> Result String (List Resource)
