@@ -1,8 +1,8 @@
-module Tests exposing (all)
+module Tests.Main exposing (all)
 
 import Test exposing (..)
-import Test.JsonApi.Documents
 import Test.JsonApi.Decode
+import Test.JsonApi.Documents
 import Test.JsonApi.Encode
 import Test.JsonApi.Errors
 

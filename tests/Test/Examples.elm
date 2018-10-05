@@ -1,4 +1,4 @@
-module Test.Examples exposing (..)
+module Test.Examples exposing (invalidPayload, payloadWithErrors, payloadWithResourceIdentifiers, recursivePayload, validPayload)
 
 {- example payload copied from JsonApi official website: http://jsonapi.org/ -}
 
@@ -163,6 +163,7 @@ payloadWithErrors =
       ]
     }
   """
+
 
 payloadWithResourceIdentifiers : String
 payloadWithResourceIdentifiers =

@@ -1,12 +1,12 @@
 module Test.JsonApi.Errors exposing (suite)
 
-import Test
+import Debug exposing (todo)
 import Expect
-import Debug exposing (crash)
-import Test.Examples exposing (payloadWithErrors)
 import Json.Decode exposing (decodeString)
-import JsonApi.Decode exposing (errors)
 import JsonApi
+import JsonApi.Decode exposing (errors)
+import Test
+import Test.Examples exposing (payloadWithErrors)
 
 
 suite : Test.Test
@@ -25,7 +25,7 @@ documentErrors =
                     List.head errorObjects
 
                 Err _ ->
-                    crash "Expected decode to pass in test 'documentErrors'"
+                    todo "Expected decode to pass in test 'documentErrors'"
 
         assertion =
             \_ ->
@@ -49,4 +49,4 @@ documentErrors =
                         }
                     )
     in
-        Test.test "it decodes error payloads into error objects" assertion
+    Test.test "it decodes error payloads into error objects" assertion

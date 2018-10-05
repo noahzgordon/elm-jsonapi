@@ -1,14 +1,14 @@
 module Test.JsonApi.Decode exposing (suite)
 
-import Test
 import Expect
 import Json.Decode exposing (decodeString)
-import JsonApi.Decode
-import JsonApi.Data exposing (emptyLinks)
 import JsonApi exposing (Document)
-import JsonApi.Resources
+import JsonApi.Data exposing (emptyLinks)
+import JsonApi.Decode
 import JsonApi.Documents
-import Test.Examples exposing (validPayload, invalidPayload, payloadWithResourceIdentifiers)
+import JsonApi.Resources
+import Test
+import Test.Examples exposing (invalidPayload, payloadWithResourceIdentifiers, validPayload)
 
 
 suite : Test.Test
@@ -32,7 +32,7 @@ decodesValidPayload =
                     Err _ ->
                         Expect.fail "Failed to decode a valid payload"
     in
-        Test.test "can decode a valid JSON API payload" succeedsWithValidPayload
+    Test.test "can decode a valid JSON API payload" succeedsWithValidPayload
 
 
 decodesInvalidPayload : Test.Test
@@ -47,7 +47,7 @@ decodesInvalidPayload =
                     Err _ ->
                         Expect.pass
     in
-        Test.test "fails properly with invalid payload" failsWithInvalidPayload
+    Test.test "fails properly with invalid payload" failsWithInvalidPayload
 
 
 decodesPayloadWithResourceIdentifiers : Test.Test
@@ -55,12 +55,13 @@ decodesPayloadWithResourceIdentifiers =
     let
         resourceIdentifierMeta =
             decodeString JsonApi.Decode.document payloadWithResourceIdentifiers
+                |> Result.mapError Json.Decode.errorToString
                 |> Result.andThen JsonApi.Documents.primaryResource
                 |> Result.toMaybe
                 |> Maybe.andThen (Maybe.map JsonApi.Resources.meta)
                 |> Result.fromMaybe "Meta not found"
                 |> Result.andThen (Result.fromMaybe "Meta is null")
-                |> Result.andThen (Json.Decode.decodeValue Json.Decode.string)
+                |> Result.andThen (Json.Decode.decodeValue Json.Decode.string >> Result.mapError Json.Decode.errorToString)
     in
-        (\_ -> Expect.equal resourceIdentifierMeta (Ok "this is the second article"))
-            |> Test.test "it can decode resource identifiers as the primary data"
+    (\_ -> Expect.equal resourceIdentifierMeta (Ok "this is the second article"))
+        |> Test.test "it can decode resource identifiers as the primary data"

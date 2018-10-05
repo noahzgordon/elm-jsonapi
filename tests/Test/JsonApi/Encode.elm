@@ -1,11 +1,11 @@
 module Test.JsonApi.Encode exposing (suite)
 
-import Test
 import Expect
+import Json.Decode as Decode exposing (at, decodeValue)
 import Json.Encode exposing (string)
-import Json.Decode as Decode exposing (decodeValue, at)
 import JsonApi.Encode
 import JsonApi.Resources as Resources
+import Test
 
 
 suite : Test.Test
@@ -52,4 +52,4 @@ encodesClientResource =
                     )
                 |> Result.withDefault (Expect.fail "Client resource coud not be encoded")
     in
-        Test.test "it encodes a client resource" assertion
+    Test.test "it encodes a client resource" assertion
