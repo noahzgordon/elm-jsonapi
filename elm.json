@@ -2,7 +2,7 @@
     "type": "package",
     "name": "noahzgordon/elm-jsonapi",
     "summary": "Decoders and helper functions for working with JSONAPI payloads",
-    "license": "BSD-3-Clause",
+    "license": "MIT",
     "version": "4.0.0",
     "exposed-modules": [
         "JsonApi",
