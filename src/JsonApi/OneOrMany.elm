@@ -1,4 +1,4 @@
-module JsonApi.OneOrMany exposing (..)
+module JsonApi.OneOrMany exposing (OneOrMany(..), extractMany, extractOne, map)
 
 
 type OneOrMany a

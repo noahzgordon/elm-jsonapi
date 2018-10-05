@@ -1,28 +1,23 @@
-module JsonApi.Documents
-    exposing
-        ( primaryResource
-        , primaryResourceCollection
-        , jsonapi
-        , links
-        , meta
-        )
+module JsonApi.Documents exposing (links, jsonapi, primaryResource, primaryResourceCollection, meta)
 
 {-| Helper functions for working with a full JsonApi Document
 
+
 # Common Helpers
+
 @docs links, jsonapi, primaryResource, primaryResourceCollection, meta
 
 -}
 
 import Dict
 import JsonApi.Data exposing (..)
-import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
+import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractMany, extractOne)
 import List.Extra
 
 
 {-| Retrieve the primary resource from a decoded Document.
-    This function assumes a singular primary resource and will return an Err
-    if the document contains a collection of primary resources.
+This function assumes a singular primary resource and will return an Err
+if the document contains a collection of primary resources.
 -}
 primaryResource : Document -> Result String (Maybe Resource)
 primaryResource (Document doc) =
@@ -30,8 +25,8 @@ primaryResource (Document doc) =
 
 
 {-| Retrieve a collection of primary resources from a decoded Document.
-    This function assumes a collection primary resources and will return an Err
-    if the document contains a singular primary resource.
+This function assumes a collection primary resources and will return an Err
+if the document contains a singular primary resource.
 -}
 primaryResourceCollection : Document -> Result String (List Resource)
 primaryResourceCollection (Document doc) =
@@ -69,4 +64,4 @@ hydratePrimaryResource relatedResources resource =
         (RawResource id obj) =
             resource
     in
-        Resource id obj (resource :: relatedResources)
+    Resource id obj (resource :: relatedResources)

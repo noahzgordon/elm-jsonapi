@@ -1,58 +1,47 @@
-module JsonApi.Resources
-    exposing
-        ( id
-        , attributes
-        , attribute
-        , relatedResource
-        , relatedResourceCollection
-        , links
-        , meta
-        , relatedLinks
-        , relatedMeta
-        , build
-        , withAttributes
-        , withRelationship
-        , withRelationships
-        , withUuid
-        )
+module JsonApi.Resources exposing
+    ( id, attributes, attribute, links, relatedResource, relatedResourceCollection
+    , meta, relatedLinks, relatedMeta, build, withAttributes, withRelationship, withRelationships, withUuid
+    )
 
 {-| Helper functions for working with a single JsonApi Resource
 
+
 # Common Helpers
-@docs id, attributes, attribute, links, relatedResource, relatedResourceCollection,
-      meta, relatedLinks, relatedMeta, build, withAttributes, withRelationship, withRelationships, withUuid
+
+@docs id, attributes, attribute, links, relatedResource, relatedResourceCollection
+@docs meta, relatedLinks, relatedMeta, build, withAttributes, withRelationship, withRelationships, withUuid
+
 -}
 
 import Dict
-import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, decodeValue, field)
+import Json.Encode as Encode
 import JsonApi.Data exposing (..)
-import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
-import JsonApi.Data exposing (..)
+import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractMany, extractOne)
 import List.Extra
 import Uuid.Barebones exposing (isValidUuid)
 
 
 {-| Find a related resource.
-    Will return an Err if a resource collection is found.
+Will return an Err if a resource collection is found.
 -}
 relatedResource : String -> Resource -> Result String (Maybe Resource)
 relatedResource relationshipName resource =
-    (related relationshipName resource)
+    related relationshipName resource
         |> Result.andThen extractOne
 
 
 {-| Find a related collection of resources.
-    Will return an Err if a single resource is found.
+Will return an Err if a single resource is found.
 -}
 relatedResourceCollection : String -> Resource -> Result String (List Resource)
 relatedResourceCollection relationshipName resource =
-    (related relationshipName resource)
+    related relationshipName resource
         |> Result.andThen extractMany
 
 
 {-| Retreive the links from a relationship.
-    Will return an Err if the relationship does not exist.
+Will return an Err if the relationship does not exist.
 -}
 relatedLinks : String -> Resource -> Result String Links
 relatedLinks relationshipName resource =
@@ -61,7 +50,7 @@ relatedLinks relationshipName resource =
 
 
 {-| Retreive the meta information from a relationship.
-    Will return an Err if the relationship does not exist.
+Will return an Err if the relationship does not exist.
 -}
 relatedMeta : String -> Resource -> Result String Meta
 relatedMeta relationshipName resource =
@@ -77,22 +66,22 @@ id (Resource identifier _ _) =
 
 
 {-| Serialize the attributes of a Resource. Because the attributes are unstructured,
-    you must provide a Json Decoder to convert them into a type that you define.
+you must provide a Json Decoder to convert them into a type that you define.
 -}
-attributes : Decoder a -> Resource -> Result String a
+attributes : Decoder a -> Resource -> Result Decode.Error a
 attributes decoder (Resource _ object _) =
     case object.attributes of
         Just attrs ->
             decodeValue decoder attrs
 
         Nothing ->
-            Err "No attributes key found for resource"
+            Err (Decode.Failure "No attributes key found for resource" Encode.null)
 
 
 {-| Serialize a single attributes of a Resource. You must provide the string key of the attribute
-    and a Json Decoder to convert the attribute into a type that you define.
+and a Json Decoder to convert the attribute into a type that you define.
 -}
-attribute : String -> Decoder a -> Resource -> Result String a
+attribute : String -> Decoder a -> Resource -> Result Decode.Error a
 attribute key decoder resource =
     attributes (field key Decode.value) resource
         |> Result.andThen (decodeValue decoder)
@@ -113,8 +102,8 @@ meta (Resource _ object _) =
 
 
 {-| Construct a ClientResource instance with the supplied type.
-    ClientResources are like Resources but without an 'id' field or related resources.
-    Use them to represent new Resources that you want to POST to a JSON API server.
+ClientResources are like Resources but without an 'id' field or related resources.
+Use them to represent new Resources that you want to POST to a JSON API server.
 -}
 build : String -> ClientResource
 build resourceType =
@@ -128,16 +117,18 @@ build resourceType =
 
 
 {-| Add a client-generated UUID to the resource. MUST be a valid Uuid in the
-    canonical representation xxxxxxxx-xxxx-Axxx-Yxxx-xxxxxxxxxxxx where A is
-    the version number between [1-5] and Y is in the range [8-B].
+canonical representation xxxxxxxx-xxxx-Axxx-Yxxx-xxxxxxxxxxxx where A is
+the version number between [1-5] and Y is in the range [8-B].
 
     I recommend using http://package.elm-lang.org/packages/danyx23/elm-uuid/2.0.2/Uuid
     to general a valid UUID.
+
 -}
 withUuid : String -> ClientResource -> Result String ClientResource
-withUuid uuid (ClientResource resourceType id obj) =
+withUuid uuid (ClientResource resourceType resourceId obj) =
     if isValidUuid uuid then
         Ok (ClientResource resourceType (Just uuid) obj)
+
     else
         Err "Uuid is not canonically valid"
 
@@ -145,7 +136,7 @@ withUuid uuid (ClientResource resourceType id obj) =
 {-| Add a list of string-value pairs as attributes to a ClientResource
 -}
 withAttributes : List ( String, Encode.Value ) -> ClientResource -> ClientResource
-withAttributes attrs (ClientResource resourceType id obj) =
+withAttributes attrs (ClientResource resourceType resourceId obj) =
     let
         newAttrs =
             case obj.attributes of
@@ -160,29 +151,29 @@ withAttributes attrs (ClientResource resourceType id obj) =
                 Nothing ->
                     Just (Encode.object attrs)
     in
-        ClientResource resourceType id { obj | attributes = newAttrs }
+    ClientResource resourceType resourceId { obj | attributes = newAttrs }
 
 
 {-| Add a relationship with a single related resource to a ClientResource
 -}
 withRelationship : String -> ResourceIdentifier -> ClientResource -> ClientResource
-withRelationship name identifier (ClientResource resourceType id obj) =
+withRelationship name identifier (ClientResource resourceType resourceId obj) =
     let
         newRelationships =
             { data = OneOrMany.One (Just identifier), links = emptyLinks, meta = Nothing }
     in
-        ClientResource resourceType id { obj | relationships = Dict.insert name newRelationships obj.relationships }
+    ClientResource resourceType resourceId { obj | relationships = Dict.insert name newRelationships obj.relationships }
 
 
 {-| Add a relationship with a collection of related resources to a ClientResource
 -}
 withRelationships : String -> List ResourceIdentifier -> ClientResource -> ClientResource
-withRelationships name identifiers (ClientResource resourceType id obj) =
+withRelationships name identifiers (ClientResource resourceType resourceId obj) =
     let
         newRelationships =
             { data = OneOrMany.Many identifiers, links = emptyLinks, meta = Nothing }
     in
-        ClientResource resourceType id { obj | relationships = Dict.insert name newRelationships obj.relationships }
+    ClientResource resourceType resourceId { obj | relationships = Dict.insert name newRelationships obj.relationships }
 
 
 
@@ -202,7 +193,7 @@ getRelationship name (Resource _ object _) =
 
 
 extractRelationshipData : Resource -> Relationship -> Result String (OneOrMany Resource)
-extractRelationshipData (Resource relIdentifier _ relatedResources) relationship =
+extractRelationshipData (Resource _ _ relatedResources) relationship =
     case relationship.data of
         One relIdentifier ->
             Result.map One (getRelatedResource relatedResources relIdentifier)
@@ -217,33 +208,32 @@ getRelatedResource relatedResources maybeIdentifier =
         find : ResourceIdentifier -> Result String Resource
         find identifier =
             let
-                compare (RawResource id _) =
-                    id == identifier
+                compare (RawResource resourceId _) =
+                    resourceId == identifier
             in
-                List.Extra.find compare relatedResources
-                    |> Maybe.map (hydrateResource relatedResources)
-                    |> Result.fromMaybe ("Could not find related resource with identifier" ++ toString identifier)
-
+            List.Extra.find compare relatedResources
+                |> Maybe.map (hydrateResource relatedResources)
+                |> Result.fromMaybe ("Could not find related resource with identifier " ++ identifier.id ++ " and type " ++ identifier.resourceType)
     in
-        case maybeIdentifier of
-            Nothing ->
-                Ok Nothing
+    case maybeIdentifier of
+        Nothing ->
+            Ok Nothing
 
-            Just identifier ->
-                Result.map Just (find identifier)
+        Just identifier ->
+            Result.map Just (find identifier)
 
 
 getRelatedCollection : List RawResource -> List ResourceIdentifier -> Result String (List Resource)
 getRelatedCollection relatedResources identifiers =
     let
-        compare (RawResource id _) =
-            List.member id identifiers
+        compare (RawResource resourceId _) =
+            List.member resourceId identifiers
     in
-        List.filter compare relatedResources
-            |> List.map (hydrateResource relatedResources)
-            |> Ok
+    List.filter compare relatedResources
+        |> List.map (hydrateResource relatedResources)
+        |> Ok
 
 
 hydrateResource : List RawResource -> RawResource -> Resource
-hydrateResource relatedResources (RawResource id obj) =
-    Resource id obj relatedResources
+hydrateResource relatedResources (RawResource resourceId obj) =
+    Resource resourceId obj relatedResources

@@ -3,15 +3,16 @@ module JsonApi.Decode exposing (document, errors)
 {-| Library for decoding JSONAPI-compliant payloads
 
 @docs document, errors
+
 -}
 
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
-import Result exposing (Result)
 import Dict
+import Json.Decode exposing (..)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import JsonApi exposing (ErrorObject)
-import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractOne, extractMany)
 import JsonApi.Data exposing (..)
+import JsonApi.OneOrMany as OneOrMany exposing (OneOrMany(..), extractMany, extractOne)
+import Result exposing (Result)
 
 
 {-| Decode a JSONAPI-compliant payload.
@@ -23,7 +24,7 @@ document =
 
 documentObject : Decoder DocumentObject
 documentObject =
-    decode DocumentObject
+    succeed DocumentObject
         |> required "data" data
         |> optional "included" (list resource) []
         |> optional "links" links emptyLinks
@@ -40,7 +41,7 @@ errors =
 
 errorObject : Decoder ErrorObject
 errorObject =
-    decode ErrorObject
+    succeed ErrorObject
         |> optional "id" (maybe string) Nothing
         |> optional "links" (maybe errorLinks) Nothing
         |> optional "status" (maybe string) Nothing
@@ -53,14 +54,14 @@ errorObject =
 
 source : Decoder Source
 source =
-    decode Source
+    succeed Source
         |> optional "pointer" (maybe string) Nothing
         |> optional "parameter" (maybe string) Nothing
 
 
 errorLinks : Decoder ErrorLinks
 errorLinks =
-    decode ErrorLinks
+    succeed ErrorLinks
         |> optional "about" (maybe string) Nothing
 
 
@@ -71,7 +72,7 @@ meta =
 
 jsonApiObject : Decoder (Maybe JsonApiObject)
 jsonApiObject =
-    decode JsonApiObject
+    succeed JsonApiObject
         |> optional "version" (maybe string) Nothing
         |> optional "meta" meta Nothing
         |> maybe
@@ -92,7 +93,7 @@ resource =
 
 resourceObject : Decoder ResourceObject
 resourceObject =
-    decode ResourceObject
+    succeed ResourceObject
         |> optional "attributes" attributes Nothing
         |> optional "relationships" relationships Dict.empty
         |> optional "links" links emptyLinks
@@ -101,7 +102,7 @@ resourceObject =
 
 links : Decoder Links
 links =
-    decode Links
+    succeed Links
         |> optional "self" link Nothing
         |> optional "related" link Nothing
         |> optional "first" link Nothing
@@ -127,7 +128,7 @@ relationships =
 
 relationship : Decoder Relationship
 relationship =
-    decode Relationship
+    succeed Relationship
         |> required "data" relationshipData
         |> optional "links" links emptyLinks
         |> optional "meta" meta Nothing
@@ -143,6 +144,6 @@ relationshipData =
 
 resourceIdentifier : Decoder ResourceIdentifier
 resourceIdentifier =
-    decode ResourceIdentifier
+    succeed ResourceIdentifier
         |> required "id" string
         |> required "type" string

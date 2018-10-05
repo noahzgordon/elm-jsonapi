@@ -1,4 +1,4 @@
-module JsonApi.Data exposing (..)
+module JsonApi.Data exposing (Attributes, ClientResource(..), Document(..), DocumentObject, ErrorLinks, JsonApiObject, Link, Links, Meta, RawResource(..), Relationship, Relationships, Resource(..), ResourceIdentifier, ResourceObject, Source, emptyLinks)
 
 import Dict exposing (Dict)
 import Json.Decode

@@ -1,15 +1,10 @@
-module JsonApi
-    exposing
-        ( Document
-        , Resource
-        , Links
-        , Meta
-        , ErrorObject
-        )
+module JsonApi exposing (Document, Resource, Links, Meta, ErrorObject)
 
 {-| A library for processing and working with JSON API payloads.
 
+
 # Generic Data Types
+
 @docs Document, Resource, Links, Meta, ErrorObject
 
 -}
@@ -30,21 +25,20 @@ type alias Resource =
 
 
 {-| Data type representing a JsonApi links object.
-    See: jsonapi.org/format/#document-links
+See: jsonapi.org/format/#document-links
 -}
 type alias Links =
     JsonApi.Data.Links
 
 
 {-| Data type representing a JsonApi meta object. Alias for Json.Encode.Value.
-    See: jsonapi.org/format/#document-meta
+See: jsonapi.org/format/#document-meta
 -}
 type alias Meta =
     JsonApi.Data.Meta
 
 
 {-| Data type describing the types of problems that can be encountered when processing a JSON API payload.
-
 -}
 type alias ErrorObject =
     { id : Maybe String
@@ -56,4 +50,3 @@ type alias ErrorObject =
     , source : Maybe JsonApi.Data.Source
     , meta : Meta
     }
-
