@@ -3,7 +3,7 @@
     "name": "noahzgordon/elm-jsonapi",
     "summary": "Decoders and helper functions for working with JSONAPI payloads",
     "license": "MIT",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "exposed-modules": [
         "JsonApi",
         "JsonApi.Decode",
