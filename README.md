@@ -10,7 +10,7 @@ See the documentation at: http://package.elm-lang.org/packages/noahzgordon/elm-j
 
 ## Elm Version
 
-This module can be used with elm 0.18.x. It can be tested with elm-test 0.18.2
+This module is compatible with Elm 0.19.x. It can be tested with elm-test 0.18.2
 
 ## Examples
 
